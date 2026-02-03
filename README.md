@@ -1,6 +1,7 @@
 # Nginxfile
 
 [root@ROCKY8 sites-available]# cat ckyc4c..com.conf
+```bash
 # Redirect HTTP to HTTPS
 server {
     listen 80;
@@ -166,5 +167,6 @@ server {
  
     # Logs
     access_log /var/log/nginx/ckyc4c.cloud4c.com.access.log;
+```
     error_log /var/log/nginx/ckyc4c.cloud4c.com.error.log;
 }
