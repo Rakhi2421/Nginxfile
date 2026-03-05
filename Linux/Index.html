@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>F·S·O·C :: Linux Mastery Protocol</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --grn:#00ff41;--grn2:#00cc33;--grn3:rgba(0,255,65,0.08);
+  --cyan:#00d4ff;--gold:#ffd700;--red:#ff1744;--red2:#ff4569;
+  --bg:#01060a;--bg2:#020d06;
+  --glass:rgba(0,255,65,0.03);--glass2:rgba(0,255,65,0.07);
+  --border:rgba(0,255,65,0.18);--border2:rgba(0,255,65,0.38);
+  --text:#b8f5c8;--text2:rgba(184,245,200,0.5);
+  --glow:0 0 18px rgba(0,255,65,0.35);--glow2:0 0 35px rgba(0,255,65,0.55);
+  --csid:rgba(0,255,65,0.6);
+}
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:var(--grn) var(--bg)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--grn);border-radius:2px}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden}
+
+/* ── BG GRID ── */
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(0,100,30,0.12),transparent),
+  radial-gradient(ellipse 50% 40% at 90% 90%,rgba(0,60,20,0.08),transparent),
+  repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(0,255,65,0.018) 40px,rgba(0,255,65,0.018) 41px),
+  repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(0,255,65,0.018) 40px,rgba(0,255,65,0.018) 41px);
+  pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.09) 2px,rgba(0,0,0,0.09) 4px);pointer-events:none;z-index:1;opacity:.35}
+
+/* ── LAYOUT ── */
+.shell{position:relative;z-index:2;display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:272px;flex-shrink:0;background:rgba(1,6,10,0.97);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;overflow-x:hidden;z-index:100;backdrop-filter:blur(20px);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.sb-head{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+.fsoc-logo{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;letter-spacing:5px;color:var(--grn);text-shadow:var(--glow);margin-bottom:2px}
+.fsoc-sub{font-size:9px;color:var(--text2);letter-spacing:2px;font-family:'Share Tech Mono',monospace}
+
+/* terminal cursor blink */
+.cursor-blink{display:inline-block;width:8px;height:13px;background:var(--grn);margin-left:2px;animation:cur-blink 1s step-end infinite;vertical-align:middle}
+@keyframes cur-blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* Fsoc symbol */
+.fsoc-symbol{width:44px;height:44px;margin:0 auto 6px;position:relative;display:flex;align-items:center;justify-content:center}
+.fsoc-symbol::before{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(0,255,65,0.4);animation:fsoc-spin 8s linear infinite}
+.fsoc-symbol::after{content:'';position:absolute;inset:6px;border-radius:50%;border:1px solid rgba(0,255,65,0.25);animation:fsoc-spin 5s linear infinite reverse}
+.fsoc-eye{font-size:18px;line-height:1}
+@keyframes fsoc-spin{to{transform:rotate(360deg)}}
+
+.phase-nav{padding:8px 10px}
+.nav-section-label{font-size:8px;color:rgba(0,255,65,0.3);letter-spacing:2.5px;font-family:'Orbitron',monospace;padding:10px 4px 5px;text-transform:uppercase}
+.phase-btn{width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:5px;border:none;background:transparent;border-left:2px solid transparent;cursor:pointer;text-align:left;transition:all .2s;margin-bottom:2px;color:var(--text2)}
+.phase-btn:hover{background:var(--glass);color:var(--text);border-left-color:var(--grn)}
+.phase-btn.active{background:var(--glass2);color:var(--grn);border-left-color:var(--grn);box-shadow:inset 0 0 20px rgba(0,255,65,0.04)}
+.ph-num{font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;width:22px;height:22px;border-radius:4px;background:rgba(0,255,65,0.08);border:1px solid rgba(0,255,65,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--grn)}
+.phase-btn.active .ph-num{background:rgba(0,255,65,0.18);border-color:var(--grn);box-shadow:0 0 8px rgba(0,255,65,0.3)}
+.ph-label{font-size:10.5px;font-weight:600;letter-spacing:.4px;line-height:1.3;font-family:'Orbitron',monospace;color:inherit}
+.ph-sub{font-size:9px;color:var(--text2);margin-top:1px;font-family:'Share Tech Mono',monospace}
+
+.sb-foot{padding:14px 18px;border-top:1px solid var(--border)}
+.prog-label{font-size:8px;color:var(--text2);letter-spacing:2px;font-family:'Orbitron',monospace;margin-bottom:7px}
+.prog-wrap{height:2px;background:rgba(0,255,65,0.08);border-radius:1px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--grn2),var(--grn));width:0%;transition:width .5s ease;box-shadow:0 0 8px var(--grn)}
+.prog-txt{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--text2);margin-top:5px}
+
+/* ── MAIN ── */
+.main{margin-left:272px;flex:1;min-height:100vh}
+
+/* ── HUD HEADER ── */
+.hud{position:sticky;top:0;z-index:50;background:rgba(1,6,10,0.94);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);padding:11px 28px;display:flex;align-items:center;gap:16px}
+.hud-title{font-family:'Orbitron',monospace;font-size:12px;font-weight:900;letter-spacing:3px;color:var(--grn);text-shadow:var(--glow)}
+.hud-phase-txt{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2)}
+.hud-right{margin-left:auto;display:flex;gap:14px;align-items:center}
+.pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);box-shadow:0 0 8px var(--grn);animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.hud-stat{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--grn);letter-spacing:1px}
+.hud-sep{width:1px;height:14px;background:var(--border)}
+
+/* ── HAMBURGER ── */
+.mob-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:var(--glass2);border:1px solid var(--border);border-radius:6px;cursor:pointer;flex-shrink:0;transition:all .2s}
+.mob-btn:hover{border-color:var(--border2);box-shadow:var(--glow)}
+.mob-btn span{display:block;width:16px;height:1.5px;background:var(--grn);margin:3px 0;border-radius:1px;transition:all .3s;box-shadow:0 0 4px var(--grn)}
+.mob-btn.open span:nth-child(1){transform:translateY(4.5px) rotate(45deg)}
+.mob-btn.open span:nth-child(2){opacity:0}
+.mob-btn.open span:nth-child(3){transform:translateY(-4.5px) rotate(-45deg)}
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99;backdrop-filter:blur(3px)}
+.mob-overlay.on{display:block}
+
+/* ── CONTENT ── */
+.content{padding:0 28px 80px}
+.phase-section{display:none}
+.phase-section.active{display:block;animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── HERO ── */
+.hero{padding:52px 32px 40px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(0,60,20,0.1),transparent);pointer-events:none}
+
+/* Terminal window hero */
+.term-hero{width:100%;max-width:580px;margin:0 auto 32px;border-radius:10px;overflow:hidden;border:1px solid var(--border);box-shadow:0 0 40px rgba(0,255,65,0.1)}
+.term-bar{background:#0d1a0e;padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.term-dot{width:11px;height:11px;border-radius:50%}
+.term-dot.r{background:#ff5f56}.term-dot.y{background:#ffbd2e}.term-dot.g{background:#27c93f}
+.term-title{margin:0 auto;font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(0,255,65,0.5);letter-spacing:2px}
+.term-body{background:#010e04;padding:20px 20px 16px;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.9;color:var(--grn);text-align:left}
+.t-prompt{color:rgba(0,255,65,0.5)}
+.t-cmd{color:var(--grn)}
+.t-out{color:rgba(0,255,65,0.6)}
+.t-err{color:#ff4569}
+.t-yellow{color:var(--gold)}
+.t-cyan{color:var(--cyan)}
+.typing-cursor{display:inline-block;width:7px;height:13px;background:var(--grn);margin-left:1px;animation:cur-blink 1s step-end infinite;vertical-align:text-bottom}
+
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--grn);margin-bottom:14px;opacity:.8}
+.hero-h1{font-family:'Orbitron',monospace;font-size:clamp(20px,3.8vw,40px);font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:14px}
+.hero-h1 .g{color:var(--grn);text-shadow:var(--glow)}
+.hero-h1 .r{color:var(--red);text-shadow:0 0 20px rgba(255,23,68,0.4)}
+.hero-desc{font-size:13px;color:var(--text2);max-width:580px;margin:0 auto 28px;line-height:1.75;font-weight:300}
+
+.hero-stats{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+.stat{text-align:center;padding:14px 20px;background:var(--glass);border:1px solid var(--border);border-radius:8px}
+.stat-val{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:var(--grn);text-shadow:var(--glow);line-height:1}
+.stat-label{font-size:9px;color:var(--text2);letter-spacing:2px;margin-top:4px;font-family:'Share Tech Mono',monospace}
+
+/* ── PHASE HEADER ── */
+.phase-hdr{padding:28px 0 20px;display:flex;align-items:flex-start;gap:16px}
+.ph-badge{width:60px;height:60px;flex-shrink:0;border-radius:10px;background:var(--glass2);border:1px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;overflow:hidden}
+.ph-badge::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,65,0.08),transparent)}
+.ph-badge-num{font-family:'Share Tech Mono',monospace;font-size:17px;font-weight:700;color:var(--grn);text-shadow:var(--glow);line-height:1}
+.ph-badge-lbl{font-size:7px;color:var(--grn);letter-spacing:1px;font-family:'Share Tech Mono',monospace}
+.ph-title-wrap{}
+.ph-title{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#fff;letter-spacing:.8px;margin-bottom:4px}
+.ph-subtitle{font-size:11px;color:var(--grn);letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:8px}
+.ph-meta{display:flex;gap:8px;flex-wrap:wrap}
+.meta-tag{font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(0,255,65,0.06);border:1px solid rgba(0,255,65,0.18);color:var(--text2);font-family:'Share Tech Mono',monospace}
+.meta-tag.red{background:rgba(255,23,68,0.07);border-color:rgba(255,23,68,0.25);color:#ff6b8a}
+.meta-tag.gold{background:rgba(255,215,0,0.07);border-color:rgba(255,215,0,0.25);color:var(--gold)}
+
+/* ── GLASS CARD ── */
+.gc{background:var(--glass);border:1px solid var(--border);border-radius:11px;padding:22px;margin-bottom:18px;position:relative;overflow:hidden;transition:border-color .25s,box-shadow .25s}
+.gc:hover{border-color:var(--border2);box-shadow:var(--glow)}
+.gc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--grn),transparent);opacity:.4}
+.gc-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--grn);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.gc-title::before{content:'';width:2px;height:13px;background:var(--grn);border-radius:1px;box-shadow:0 0 8px var(--grn)}
+
+/* ── CONCEPT GRID ── */
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;margin-bottom:4px}
+.ci{background:rgba(0,0,0,0.35);border:1px solid rgba(0,255,65,0.1);border-radius:7px;padding:11px 13px;transition:all .2s;cursor:default}
+.ci:hover{border-color:rgba(0,255,65,0.28);background:rgba(0,255,65,0.04);transform:translateY(-1px)}
+.ci-icon{font-size:17px;margin-bottom:5px}
+.ci-name{font-size:11.5px;font-weight:700;color:#fff;margin-bottom:3px}
+.ci-desc{font-size:10.5px;color:var(--text2);line-height:1.4}
+
+/* ── CODE BLOCK ── */
+.code-wrap{margin:14px 0;border-radius:9px;overflow:hidden;border:1px solid rgba(0,255,65,0.13)}
+.code-hdr{background:rgba(0,0,0,0.55);padding:7px 14px;display:flex;align-items:center;gap:7px;border-bottom:1px solid rgba(0,255,65,0.08)}
+.cd{width:10px;height:10px;border-radius:50%}.cdr{background:#ff5f56}.cdy{background:#ffbd2e}.cdg{background:#27c93f}
+.code-lang{margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,255,65,0.4);letter-spacing:2px}
+.cb{background:#010e04;padding:16px 18px;overflow-x:auto}
+pre{font-family:'Share Tech Mono',monospace;font-size:11.5px;line-height:1.85;color:#b8f5c8;white-space:pre}
+.g1{color:var(--grn)}.g2{color:rgba(0,255,65,0.55)}.rd{color:#ff6b8a}.yw{color:var(--gold)}.cy{color:var(--cyan)}.wh{color:#fff}.cm{color:rgba(0,255,65,0.38);font-style:italic}
+
+/* ── PROJECT CARD ── */
+.proj{background:linear-gradient(135deg,rgba(0,255,65,0.04),rgba(0,60,20,0.06));border:1px solid rgba(0,255,65,0.28);border-radius:11px;padding:22px;margin-bottom:18px;position:relative;overflow:hidden}
+.proj::after{content:'MISSION';position:absolute;top:12px;right:14px;font-family:'Orbitron',monospace;font-size:8px;letter-spacing:3px;color:rgba(0,255,65,0.25);font-weight:700}
+.proj-glow{position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(0,255,65,0.07),transparent);pointer-events:none}
+.proj-name{font-family:'Orbitron',monospace;font-size:15px;font-weight:900;color:var(--gold);text-shadow:0 0 18px rgba(255,215,0,0.3);margin-bottom:5px}
+.proj-desc{font-size:12.5px;color:var(--text2);line-height:1.65;margin-bottom:14px}
+.build-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:7px}
+.build-item{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text)}
+.build-dot{width:4px;height:4px;border-radius:50%;background:var(--grn);box-shadow:0 0 5px var(--grn);flex-shrink:0}
+
+/* ── TIPS ── */
+.tip{background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.2);border-radius:7px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;align-items:flex-start}
+.tip-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.tip-txt{font-size:11.5px;color:rgba(255,215,0,.85);line-height:1.6;font-family:'Share Tech Mono',monospace}
+
+.warn{background:rgba(255,23,68,0.04);border:1px solid rgba(255,23,68,0.2);border-radius:7px;padding:12px 14px;margin:10px 0;display:flex;gap:10px;align-items:flex-start}
+.warn-txt{font-size:11.5px;color:rgba(255,100,120,.9);line-height:1.6;font-family:'Share Tech Mono',monospace}
+
+/* ── ROADMAP ── */
+.rm-steps{display:flex;flex-direction:column;gap:0}
+.rm-step{display:flex;gap:14px;align-items:flex-start;position:relative}
+.rm-step::before{content:'';position:absolute;left:14px;top:30px;bottom:-8px;width:1px;background:rgba(0,255,65,0.18)}
+.rm-step:last-child::before{display:none}
+.rm-circle{width:30px;height:30px;border-radius:50%;background:rgba(0,255,65,0.08);border:2px solid var(--grn);display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;color:var(--grn);flex-shrink:0;box-shadow:0 0 10px rgba(0,255,65,0.2)}
+.rm-content{padding:3px 0 20px;flex:1}
+.rm-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px}
+.rm-body{font-size:11.5px;color:var(--text2);line-height:1.6}
+
+/* ── TWO COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+/* ── DIVIDER ── */
+.div{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:22px 0;position:relative}
+.div::before{content:'◈';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:8px;color:var(--grn);background:var(--bg);padding:0 8px}
+
+/* ── EXERCISE GRID ── */
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.ex-card{background:rgba(0,0,0,0.4);border:1px solid rgba(0,255,65,0.1);border-radius:9px;padding:14px;transition:all .2s}
+.ex-card:hover{border-color:rgba(0,255,65,0.3);box-shadow:0 4px 18px rgba(0,255,65,0.07)}
+.ex-level{font-size:8px;letter-spacing:2px;margin-bottom:7px;font-family:'Orbitron',monospace;font-weight:700}
+.lv-easy{color:#69ff9b}.lv-med{color:var(--gold)}.lv-hard{color:#ff6b8a}.lv-elite{color:var(--cyan)}
+.ex-title{font-size:12.5px;font-weight:700;color:#fff;margin-bottom:5px}
+.ex-desc{font-size:10.5px;color:var(--text2);line-height:1.5}
+
+/* ── HOW GRID ── */
+.how-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.how-card{background:var(--glass);border:1px solid var(--border);border-radius:9px;padding:18px;text-align:center;position:relative;overflow:hidden}
+.how-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--grn),transparent)}
+.how-num{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:rgba(0,255,65,0.1);line-height:1;margin-bottom:6px}
+.how-icon{font-size:24px;margin-bottom:8px}
+.how-title{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--grn);margin-bottom:5px;letter-spacing:1px}
+.how-body{font-size:10.5px;color:var(--text2);line-height:1.6}
+
+/* ── NAV CONTROLS ── */
+.nav-ctrl{display:flex;gap:10px;padding:18px 0 40px;justify-content:center;flex-wrap:wrap}
+.nc-btn{padding:10px 22px;border-radius:5px;border:1px solid var(--border);background:var(--glass);color:var(--grn);font-family:'Orbitron',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;transition:all .2s}
+.nc-btn:hover{background:var(--glass2);border-color:var(--border2);box-shadow:var(--glow)}
+.nc-btn.primary{background:rgba(0,255,65,0.1);border-color:var(--grn)}
+
+/* ── OMEGA ── */
+.omega-banner{background:linear-gradient(135deg,rgba(255,23,68,0.06),rgba(180,0,30,0.07));border:1px solid rgba(255,23,68,0.3);border-radius:11px;padding:26px;margin-bottom:18px;text-align:center;position:relative;overflow:hidden}
+.omega-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,23,68,0.07),transparent 60%);pointer-events:none}
+.omega-title{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--red);text-shadow:0 0 28px rgba(255,23,68,0.5);margin-bottom:7px}
+.omega-sub{font-size:11px;color:rgba(255,120,120,0.65);letter-spacing:2px;font-family:'Share Tech Mono',monospace}
+
+/* ── SIGNATURE FOOTER ── */
+.sig-footer{position:relative;background:rgba(0,0,0,0.7);border-top:1px solid var(--border);overflow:hidden;padding:52px 24px 38px;text-align:center;z-index:2}
+.sig-footer::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:50%;height:1px;background:linear-gradient(90deg,transparent,var(--grn),transparent);box-shadow:0 0 20px rgba(0,255,65,0.4)}
+.sig-footer::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 70% at 50% 100%,rgba(0,40,15,0.1),transparent);pointer-events:none}
+.sig-scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,65,0.01) 3px,rgba(0,255,65,0.01) 4px);pointer-events:none;z-index:0}
+.sig-inner{position:relative;z-index:1;max-width:640px;margin:0 auto}
+.sig-arc{width:64px;height:64px;margin:0 auto 26px;position:relative}
+.sig-arc-r1{position:absolute;inset:0;border-radius:50%;border:1.5px solid transparent;border-top-color:rgba(0,255,65,0.55);border-right-color:rgba(0,255,65,0.18);animation:fsoc-spin 6s linear infinite}
+.sig-arc-r2{position:absolute;inset:9px;border-radius:50%;border:1px solid transparent;border-bottom-color:rgba(0,255,65,0.45);border-left-color:rgba(0,255,65,0.12);animation:fsoc-spin 4s linear infinite reverse}
+.sig-arc-core{position:absolute;inset:20px;border-radius:50%;background:radial-gradient(circle,rgba(0,255,65,0.9) 10%,rgba(0,180,50,0.5) 50%,transparent);box-shadow:0 0 16px rgba(0,255,65,0.7),0 0 32px rgba(0,120,30,0.3);animation:sig-pulse 2.2s ease-in-out infinite}
+@keyframes sig-pulse{0%,100%{box-shadow:0 0 16px rgba(0,255,65,0.7),0 0 32px rgba(0,120,30,0.3)}50%{box-shadow:0 0 28px rgba(0,255,65,1),0 0 50px rgba(0,180,50,0.4)}}
+.sig-quote{font-family:'Exo 2',sans-serif;font-size:clamp(13px,2vw,16px);font-weight:300;font-style:italic;color:rgba(184,245,200,.65);line-height:1.8;margin-bottom:26px;padding:0 10px;position:relative}
+.sig-quote::before{content:'\275D';position:absolute;top:-10px;left:0;font-size:36px;font-style:normal;color:rgba(0,255,65,0.1);font-family:Georgia,serif;line-height:1}
+.sig-div{display:flex;align-items:center;gap:10px;max-width:260px;margin:0 auto 22px}
+.sig-div-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(0,255,65,0.28))}
+.sig-div-line:last-child{background:linear-gradient(90deg,rgba(0,255,65,0.28),transparent)}
+.sig-div-dia{font-size:8px;color:var(--grn);text-shadow:0 0 8px var(--grn);animation:sig-pulse 2s ease-in-out infinite;flex-shrink:0}
+.sig-built{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:4px;color:rgba(0,255,65,0.38);text-transform:uppercase;margin-bottom:8px}
+.sig-name{font-family:'Orbitron',monospace;font-size:clamp(20px,5vw,34px);font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,var(--grn) 0%,#00ffea 45%,var(--gold) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 14px rgba(0,255,65,0.5));margin-bottom:7px;animation:name-glow 3s ease-in-out infinite alternate}
+@keyframes name-glow{from{filter:drop-shadow(0 0 8px rgba(0,255,65,0.4))}to{filter:drop-shadow(0 0 22px rgba(0,255,65,0.8)) drop-shadow(0 0 36px rgba(0,255,200,0.25))}}
+.sig-tagline{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.5px;color:rgba(0,255,65,0.35);text-transform:uppercase;margin-bottom:28px}
+.sig-bottom{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(184,245,200,0.2);border-top:1px solid rgba(0,255,65,0.06);padding-top:14px}
+.sig-sep{color:rgba(0,255,65,0.25)}
+.sig-stack{color:rgba(0,255,65,0.25)}
+
+/* ══ RESPONSIVE ══════════════════════════════════════════ */
+@media(max-width:1024px){
+  .sidebar{width:230px}.main{margin-left:230px}
+  .hud{padding:10px 18px;gap:10px}
+  .content{padding:0 18px 60px}
+  .hero{padding:36px 18px 28px}
+  .ph-title{font-size:17px}
+  .two-col{gap:10px}
+  .cg{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+}
+@media(max-width:768px){
+  .shell{display:block}
+  .main{margin-left:0}
+  .sidebar{position:fixed;width:270px;max-width:84vw;transform:translateX(-100%);z-index:200;border-right:1px solid var(--border2);box-shadow:4px 0 40px rgba(0,0,0,.9)}
+  .sidebar.open{transform:translateX(0)}
+  .mob-btn{display:flex}
+  .hud{padding:9px 12px;gap:8px;position:sticky;top:0;z-index:150}
+  .hud-title{font-size:10px;letter-spacing:1.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+  .hud-phase-txt{display:none}
+  .hud-right{gap:8px}
+  .hud-sep,.hud-stat:last-child{display:none}
+  .hud-stat{font-size:9px}
+  .content{padding:0 12px 60px}
+  .hero{padding:24px 12px 22px}
+  .term-body{font-size:10px;padding:14px 14px 12px}
+  .hero-desc{font-size:12px}
+  .hero-stats{gap:8px}
+  .stat{padding:9px 14px}
+  .stat-val{font-size:20px}
+  .phase-hdr{padding:18px 0 14px;gap:10px}
+  .ph-badge{width:46px;height:46px}
+  .ph-badge-num{font-size:14px}
+  .ph-title{font-size:15px;letter-spacing:.4px}
+  .ph-subtitle{font-size:9.5px;letter-spacing:1px}
+  .gc{padding:14px 12px;margin-bottom:12px}
+  .gc-title{font-size:10px;letter-spacing:1.5px;margin-bottom:10px}
+  .two-col{grid-template-columns:1fr}
+  .cg{grid-template-columns:1fr 1fr;gap:7px}
+  .how-grid{grid-template-columns:1fr 1fr;gap:9px}
+  .ex-grid{grid-template-columns:1fr;gap:9px}
+  .build-grid{grid-template-columns:1fr}
+  .ci{padding:9px 11px}.ci-icon{font-size:15px}
+  .ci-name{font-size:10.5px}.ci-desc{font-size:9.5px}
+  .proj{padding:14px 12px}
+  .proj-name{font-size:13px}
+  .proj-desc{font-size:11.5px}
+  .cb{padding:11px 13px}
+  pre{font-size:9.5px;line-height:1.75}
+  .code-hdr{padding:6px 12px}
+  .tip,.warn{padding:10px 11px;gap:8px}
+  .tip-txt,.warn-txt{font-size:10.5px}
+  .rm-step{gap:10px}
+  .rm-circle{width:26px;height:26px;font-size:8px}
+  .rm-content{padding:2px 0 16px}
+  .rm-title{font-size:12px}.rm-body{font-size:10.5px}
+  .omega-banner{padding:18px 14px}
+  .omega-title{font-size:18px}
+  .nav-ctrl{flex-direction:column;gap:7px;align-items:stretch;padding:14px 0 36px}
+  .nc-btn{padding:11px 14px;font-size:9.5px;text-align:center}
+  .sig-footer{padding:38px 16px 30px}
+  .sig-arc{width:52px;height:52px;margin-bottom:18px}
+  .sig-quote{font-size:12px;margin-bottom:18px}
+  .sig-tagline{font-size:8px}
+  .sig-bottom{font-size:8px}
+}
+@media(max-width:420px){
+  .cg{grid-template-columns:1fr}
+  .how-grid{grid-template-columns:1fr}
+  .hero-stats{gap:6px}
+  .stat{padding:8px 11px}
+  .hud-title{font-size:9px;max-width:105px}
+  .ph-title{font-size:13px}
+  pre{font-size:9px}
+  .content{padding:0 8px 60px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="fsoc-symbol"><div class="fsoc-eye">🎭</div></div>
+      <div>
+        <div class="fsoc-logo">F·S·O·C<span class="cursor-blink"></span></div>
+        <div class="fsoc-sub">LINUX MASTERY PROTOCOL</div>
+      </div>
+    </div>
+  </div>
+  <div class="phase-nav">
+    <div class="nav-section-label">MISSION MODULES</div>
+    <button class="phase-btn active" data-phase="0" onclick="go(0,this)"><span class="ph-num">00</span><div><div class="ph-label">HOW TO USE</div><div class="ph-sub">Read this first</div></div></button>
+    <button class="phase-btn" data-phase="1" onclick="go(1,this)"><span class="ph-num">01</span><div><div class="ph-label">TERMINAL CORE</div><div class="ph-sub">Shell & Navigation</div></div></button>
+    <button class="phase-btn" data-phase="2" onclick="go(2,this)"><span class="ph-num">02</span><div><div class="ph-label">FILE SYSTEM</div><div class="ph-sub">Everything is a file</div></div></button>
+    <button class="phase-btn" data-phase="3" onclick="go(3,this)"><span class="ph-num">03</span><div><div class="ph-label">TEXT WARFARE</div><div class="ph-sub">Vim, grep, awk, sed</div></div></button>
+    <button class="phase-btn" data-phase="4" onclick="go(4,this)"><span class="ph-num">04</span><div><div class="ph-label">PROCESS INTEL</div><div class="ph-sub">Processes & Signals</div></div></button>
+    <button class="phase-btn" data-phase="5" onclick="go(5,this)"><span class="ph-num">05</span><div><div class="ph-label">NETWORK RECON</div><div class="ph-sub">Networking & SSH</div></div></button>
+    <button class="phase-btn" data-phase="6" onclick="go(6,this)"><span class="ph-num">06</span><div><div class="ph-label">SHELL SCRIPTING</div><div class="ph-sub">Bash Automation</div></div></button>
+    <button class="phase-btn" data-phase="7" onclick="go(7,this)"><span class="ph-num">07</span><div><div class="ph-label">USER CONTROL</div><div class="ph-sub">Users, Groups, sudo</div></div></button>
+    <button class="phase-btn" data-phase="8" onclick="go(8,this)"><span class="ph-num">08</span><div><div class="ph-label">PACKAGE OPS</div><div class="ph-sub">apt, dnf, compile</div></div></button>
+    <button class="phase-btn" data-phase="9" onclick="go(9,this)"><span class="ph-num">09</span><div><div class="ph-label">SYSTEM HARDENING</div><div class="ph-sub">Security & Firewall</div></div></button>
+    <button class="phase-btn" data-phase="10" onclick="go(10,this)"><span class="ph-num">10</span><div><div class="ph-label">AUTO ENGINE</div><div class="ph-sub">Cron & systemd</div></div></button>
+    <button class="phase-btn" data-phase="11" onclick="go(11,this)"><span class="ph-num">11</span><div><div class="ph-label">CONTAINER TECH</div><div class="ph-sub">Docker & Compose</div></div></button>
+    <button class="phase-btn" data-phase="12" onclick="go(12,this)"><span class="ph-num" style="color:var(--red);border-color:rgba(255,23,68,0.4)">Ω</span><div><div class="ph-label" style="color:var(--red2)">OMEGA SEQUENCE</div><div class="ph-sub">Mr. Robot Final Op</div></div></button>
+  </div>
+  <div class="sb-foot">
+    <div class="prog-label">MISSION PROGRESS</div>
+    <div class="prog-wrap"><div class="prog-fill" id="prog-bar"></div></div>
+    <div class="prog-txt" id="prog-txt">MODULE 0 / 12 ACCESSED</div>
+  </div>
+</nav>
+
+<!-- ══════════ MAIN ══════════ -->
+<main class="main">
+  <div class="hud">
+    <button class="mob-btn" id="mob-btn" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="hud-title">LINUX MASTERY PROTOCOL</div>
+    <div class="hud-phase-txt" id="phase-ind">MODULE 00 :: HOW TO USE</div>
+    <div class="hud-right">
+      <div class="pulse-dot"></div>
+      <div class="hud-stat">SYSTEM ACTIVE</div>
+      <div class="hud-sep"></div>
+      <div class="hud-stat">MR. ROBOT MODE</div>
+    </div>
+  </div>
+  <div class="mob-overlay" id="mob-overlay" onclick="toggleSidebar()"></div>
+
+  <div class="content">
+
+<!-- ════════════════════════════════════════════════════════
+     PHASE 0 — HOW TO USE
+════════════════════════════════════════════════════════ -->
+<div class="phase-section active" id="phase-0">
+  <div class="hero">
+    <div class="term-hero">
+      <div class="term-bar">
+        <div class="term-dot r"></div><div class="term-dot y"></div><div class="term-dot g"></div>
+        <div class="term-title">root@fsoc:~#</div>
+      </div>
+      <div class="term-body">
+<span class="g2">$</span> <span class="g1">whoami</span><br>
+<span class="t-out">root</span><br>
+<span class="g2">$</span> <span class="g1">uname -a</span><br>
+<span class="t-out">Linux fsoc 6.1.0-kali #1 SMP Debian x86_64 GNU/Linux</span><br>
+<span class="g2">$</span> <span class="g1">echo "Hello, Mr. Robot"</span><br>
+<span class="t-yellow">Hello, Mr. Robot</span><br>
+<span class="g2">$</span> <span class="g1">cat /etc/motd</span><br>
+<span class="cy">[ FSOC Linux Mastery Protocol — Initializing... ]</span><br>
+<span class="g2">$</span> <span class="typing-cursor"></span>
+      </div>
+    </div>
+    <div class="hero-eyebrow">⚡ INITIALIZING LINUX MASTERY PROTOCOL ⚡</div>
+    <h1 class="hero-h1">From <span class="g">Zero</span> to<br><span class="r">Mr. Robot</span> Level Linux</h1>
+    <p class="hero-desc">No tutorial hell. No passive watching. Pure command-line, project-driven mastery — the way elite sysadmins, hackers, and DevOps engineers actually learn Linux from the ground up.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-val">12</div><div class="stat-label">PHASES</div></div>
+      <div class="stat"><div class="stat-val">20+</div><div class="stat-label">REAL OPS</div></div>
+      <div class="stat"><div class="stat-val">100%</div><div class="stat-label">HANDS-ON</div></div>
+      <div class="stat"><div class="stat-val">0</div><div class="stat-label">TUTORIALS</div></div>
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <div class="gc">
+    <div class="gc-title">HOW TO USE THIS GUIDE</div>
+    <div class="how-grid">
+      <div class="how-card"><div class="how-num">01</div><div class="how-icon">🖥️</div><div class="how-title">GET LINUX FIRST</div><div class="how-body">Install Ubuntu 22.04 LTS (dual boot or WSL2 on Windows). Use a real terminal — no cloud emulators. Real skill requires real metal.</div></div>
+      <div class="how-card"><div class="how-num">02</div><div class="how-icon">📖</div><div class="how-title">READ THE CONCEPT</div><div class="how-body">Each phase starts with the WHY. Understand why each command exists before typing it. Context makes commands stick permanently.</div></div>
+      <div class="how-card"><div class="how-num">03</div><div class="how-icon">⌨️</div><div class="how-title">TYPE EVERY COMMAND</div><div class="how-body">Never copy-paste commands blindly. Type every single one. Your muscle memory and instincts are built keystroke by keystroke.</div></div>
+      <div class="how-card"><div class="how-num">04</div><div class="how-icon">💥</div><div class="how-title">BREAK THINGS</div><div class="how-body">Intentionally break your system in a VM. Fix it. You learn more from recovering a broken system than from a clean one.</div></div>
+      <div class="how-card"><div class="how-num">05</div><div class="how-icon">🚀</div><div class="how-title">BUILD THE PROJECT</div><div class="how-body">Every phase ends with a real project. Build it using only what you learned. Then extend it with features you invent.</div></div>
+      <div class="how-card"><div class="how-num">06</div><div class="how-icon">📓</div><div class="how-title">KEEP A RUNBOOK</div><div class="how-body">Maintain a personal notes file of every command and trick you learn. Top Linux engineers have runbooks. Yours starts today.</div></div>
+    </div>
+  </div>
+
+  <div class="gc">
+    <div class="gc-title">ENVIRONMENT SETUP — DO THIS NOW</div>
+    <div class="two-col">
+      <div class="rm-steps">
+        <div class="rm-step"><div class="rm-circle">1</div><div class="rm-content"><div class="rm-title">Install Ubuntu 22.04 LTS</div><div class="rm-body">ubuntu.com/download. Use VirtualBox (free) or VMware Player for a safe sandbox. Or WSL2 on Windows: <code style="color:var(--grn)">wsl --install</code></div></div></div>
+        <div class="rm-step"><div class="rm-circle">2</div><div class="rm-content"><div class="rm-title">Install a Good Terminal</div><div class="rm-body">On Linux: install Terminator or Alacritty. On Mac: iTerm2. These support split panes — essential for real work.</div></div></div>
+        <div class="rm-step"><div class="rm-circle">3</div><div class="rm-content"><div class="rm-title">Install Essential Tools</div><div class="rm-body"><code style="color:var(--grn)">sudo apt update && sudo apt install -y vim git curl wget htop net-tools nmap tree jq</code></div></div></div>
+        <div class="rm-step"><div class="rm-circle">4</div><div class="rm-content"><div class="rm-title">Create Your Runbook</div><div class="rm-body"><code style="color:var(--grn)">mkdir ~/runbook && vim ~/runbook/linux-notes.md</code> — Document every command you learn here.</div></div></div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">FIRST COMMANDS</div></div>
+        <div class="cb"><pre><span class="cm"># Check your Linux version</span>
+<span class="g1">uname -a</span>
+<span class="g1">cat /etc/os-release</span>
+
+<span class="cm"># Update system — always do this first</span>
+<span class="g1">sudo apt update && sudo apt upgrade -y</span>
+
+<span class="cm"># Check you exist</span>
+<span class="g1">whoami</span>            <span class="cm"># your username</span>
+<span class="g1">id</span>                <span class="cm"># uid, gid, groups</span>
+<span class="g1">hostname</span>          <span class="cm"># machine name</span>
+<span class="g1">uptime</span>            <span class="cm"># how long running</span>
+
+<span class="cm"># Explore the filesystem</span>
+<span class="g1">ls /</span>              <span class="cm"># root of everything</span>
+<span class="g1">tree / -L 2</span>       <span class="cm"># visual tree view</span>
+
+<span class="cm"># Start your runbook</span>
+<span class="g1">echo "# My Linux Journey" > ~/runbook.md</span>
+<span class="g1">date >> ~/runbook.md</span></pre></div>
+      </div>
+    </div>
+    <div class="tip"><div class="tip-icon">⚡</div><div class="tip-txt">FSOC TIP: The #1 thing that separates Linux masters from beginners is the man page habit. Before Googling ANY command, type: <strong>man command_name</strong>. Read it. Then Google. This builds deep understanding that search results never will.</div></div>
+  </div>
+
+  <div class="gc">
+    <div class="gc-title">YOUR LEARNING SCHEDULE</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">🎯</div><div class="ci-name">Daily: 1-2 Hours</div><div class="ci-desc">Use Linux for EVERYTHING. Switch your daily workflow to Linux. Immersion is the fastest path.</div></div>
+      <div class="ci"><div class="ci-icon">📅</div><div class="ci-name">Per Phase: 1 Week</div><div class="ci-desc">One week per phase. Don't rush. Deep knowledge of Phase 3 beats shallow knowledge of Phase 11.</div></div>
+      <div class="ci"><div class="ci-icon">💥</div><div class="ci-name">Weekend: Break It</div><div class="ci-desc">Every weekend: intentionally misconfigure something in your VM, then fix it without reinstalling.</div></div>
+      <div class="ci"><div class="ci-icon">📓</div><div class="ci-name">Runbook: Always Open</div><div class="ci-desc">Keep your notes file open in a split terminal pane at all times. Document as you go.</div></div>
+      <div class="ci"><div class="ci-icon">🏆</div><div class="ci-name">Total: 3-4 Months</div><div class="ci-desc">3-4 months of consistent daily use puts you in the top 1% of Linux knowledge worldwide.</div></div>
+      <div class="ci"><div class="ci-icon">🎭</div><div class="ci-name">CTF Practice</div><div class="ci-desc">After Phase 6: do TryHackMe or HackTheBox rooms. Apply everything in real challenges.</div></div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn primary" onclick="go(1,document.querySelector('[data-phase=\'1\']'))">⚡ BEGIN PHASE 01 — TERMINAL CORE →</button></div>
+</div>
+
+<!-- ════ PHASE 1: TERMINAL CORE ════ -->
+<div class="phase-section" id="phase-1">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">01</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">TERMINAL CORE</div>
+      <div class="ph-subtitle">⚡ SHELL, NAVIGATION, COMMANDS, MAN PAGES, SHORTCUTS</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag gold">LEVEL: INITIATE</span><span class="meta-tag">DISTRO: ANY</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">🐚</div><div class="ci-name">Shell Basics</div><div class="ci-desc">bash vs sh vs zsh. What a shell is, how it interprets commands, the prompt structure.</div></div>
+      <div class="ci"><div class="ci-icon">📂</div><div class="ci-name">Navigation</div><div class="ci-desc">pwd, cd, ls with flags -la -lh -R. Absolute vs relative paths. ~ and .. shortcuts.</div></div>
+      <div class="ci"><div class="ci-icon">📄</div><div class="ci-name">File Operations</div><div class="ci-desc">cp, mv, rm, mkdir, touch, cat, less, head, tail, wc. Create, copy, move, delete files.</div></div>
+      <div class="ci"><div class="ci-icon">🔍</div><div class="ci-name">find & locate</div><div class="ci-desc">find / -name "*.log" — find files by name, size, date, type. The most powerful search tool.</div></div>
+      <div class="ci"><div class="ci-icon">📚</div><div class="ci-name">man Pages</div><div class="ci-desc">man ls, man find, man bash — read official docs. / to search inside. q to quit.</div></div>
+      <div class="ci"><div class="ci-icon">⌨️</div><div class="ci-name">Shell Shortcuts</div><div class="ci-desc">Ctrl+C, Ctrl+Z, Tab completion, Ctrl+R history search, !!, history. Work at 10x speed.</div></div>
+      <div class="ci"><div class="ci-icon">🔗</div><div class="ci-name">Pipes & Redirection</div><div class="ci-desc">| pipe, &gt; redirect, &gt;&gt; append, &lt; input, 2&gt;&amp;1 stderr. Chain commands together.</div></div>
+      <div class="ci"><div class="ci-icon">📋</div><div class="ci-name">Environment</div><div class="ci-desc">echo $PATH, export, .bashrc, .bash_profile, aliases. Customize your shell environment.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">ESSENTIAL COMMANDS — MASTER THESE COLD</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH</div></div>
+      <div class="cb"><pre><span class="cm"># ─── NAVIGATION ────────────────────────────────────────</span>
+<span class="g1">pwd</span>                          <span class="cm"># Print working directory</span>
+<span class="g1">ls -la</span>                       <span class="cm"># List all files + hidden + details</span>
+<span class="g1">ls -lhS</span>                      <span class="cm"># Sort by size, human-readable</span>
+<span class="g1">cd ~</span>                         <span class="cm"># Go home</span>
+<span class="g1">cd -</span>                         <span class="cm"># Go to previous directory</span>
+<span class="g1">cd ../../../</span>                  <span class="cm"># Go 3 levels up</span>
+
+<span class="cm"># ─── FILE OPERATIONS ───────────────────────────────────</span>
+<span class="g1">touch secret.txt</span>             <span class="cm"># Create empty file</span>
+<span class="g1">cp -r folder/ backup/</span>        <span class="cm"># Copy directory recursively</span>
+<span class="g1">mv oldname.txt newname.txt</span>   <span class="cm"># Rename/move file</span>
+<span class="g1">rm -rf dangerous_dir/</span>        <span class="cm"># Delete dir (CAREFUL — no trash!)</span>
+<span class="g1">mkdir -p deep/nested/dir</span>     <span class="cm"># Create nested dirs at once</span>
+
+<span class="cm"># ─── READING FILES ─────────────────────────────────────</span>
+<span class="g1">cat /etc/passwd</span>              <span class="cm"># Read entire file</span>
+<span class="g1">less /var/log/syslog</span>         <span class="cm"># Scroll through (q to quit)</span>
+<span class="g1">head -20 file.txt</span>            <span class="cm"># First 20 lines</span>
+<span class="g1">tail -f /var/log/auth.log</span>    <span class="cm"># Live follow (real-time logs!)</span>
+
+<span class="cm"># ─── PIPES & REDIRECTION ───────────────────────────────</span>
+<span class="g1">ls -la | grep ".sh"</span>          <span class="cm"># Filter output</span>
+<span class="g1">echo "data" >> output.txt</span>    <span class="cm"># Append to file</span>
+<span class="g1">cat file.txt | wc -l</span>         <span class="cm"># Count lines</span>
+<span class="g1">ls 2>/dev/null</span>               <span class="cm"># Suppress errors</span>
+<span class="g1">command > out.txt 2>&1</span>       <span class="cm"># Both stdout+stderr to file</span>
+
+<span class="cm"># ─── FINDING FILES ─────────────────────────────────────</span>
+<span class="g1">find / -name "passwd" 2>/dev/null</span>
+<span class="g1">find /home -size +10M</span>        <span class="cm"># Files bigger than 10MB</span>
+<span class="g1">find . -mtime -1</span>             <span class="cm"># Modified in last 24 hours</span>
+<span class="g1">find / -perm -4000 2>/dev/null</span> <span class="cm"># SUID files (security research)</span>
+
+<span class="cm"># ─── POWER SHORTCUTS ───────────────────────────────────</span>
+<span class="cm"># Ctrl+R  — reverse search history</span>
+<span class="cm"># Ctrl+A  — jump to start of line</span>
+<span class="cm"># Ctrl+E  — jump to end of line</span>
+<span class="cm"># !!      — repeat last command</span>
+<span class="cm"># !$      — last argument of last command</span>
+<span class="cm"># Alt+.   — paste last argument</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🗂️ PROJECT 1.A — FILESYSTEM INTELLIGENCE MAPPER</div>
+    <div class="proj-desc">Using ONLY terminal commands from Phase 1, build a shell script that maps your entire home directory, finds all files modified in the last 7 days, locates the 10 largest files, and outputs a formatted intelligence report to a text file.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>Use find + ls to map directory tree</div>
+      <div class="build-item"><div class="build-dot"></div>Locate top 10 largest files with du + sort</div>
+      <div class="build-item"><div class="build-dot"></div>Find recently modified files with -mtime</div>
+      <div class="build-item"><div class="build-dot"></div>Count files per type using grep + wc</div>
+      <div class="build-item"><div class="build-dot"></div>Redirect full report to ~/intel-report.txt</div>
+      <div class="build-item"><div class="build-dot"></div>Display with color-coded output using echo -e</div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CHALLENGE EXERCISES</div>
+    <div class="ex-grid">
+      <div class="ex-card"><div class="ex-level lv-easy">● EASY</div><div class="ex-title">Alias Builder</div><div class="ex-desc">Create 10 custom aliases in ~/.bashrc. Reload with source ~/.bashrc and test them all.</div></div>
+      <div class="ex-card"><div class="ex-level lv-easy">● EASY</div><div class="ex-title">File Counter</div><div class="ex-desc">Write a one-liner that counts how many .txt files exist in /home. No scripting — pipes only.</div></div>
+      <div class="ex-card"><div class="ex-level lv-med">● MEDIUM</div><div class="ex-title">Log Analyzer</div><div class="ex-desc">Read /var/log/syslog. Extract all ERROR lines, count them, and save to a report file.</div></div>
+      <div class="ex-card"><div class="ex-level lv-hard">● HARD</div><div class="ex-title">Recursive Search</div><div class="ex-desc">Find all files in / containing the word "password" (case-insensitive) using find + grep. Log errors to /dev/null.</div></div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(0,document.querySelector('[data-phase=\'0\']'))">← BACK</button><button class="nc-btn primary" onclick="go(2,document.querySelector('[data-phase=\'2\']'))">PHASE 02: FILE SYSTEM →</button></div>
+</div>
+
+<!-- ════ PHASE 2: FILE SYSTEM ════ -->
+<div class="phase-section" id="phase-2">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">02</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">FILE SYSTEM</div>
+      <div class="ph-subtitle">⚡ LINUX FILESYSTEM HIERARCHY, PERMISSIONS, INODES, LINKS</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag gold">LEVEL: INITIATE</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">🌳</div><div class="ci-name">FHS — Filesystem Hierarchy</div><div class="ci-desc">/bin, /etc, /var, /tmp, /proc, /dev, /home, /usr — what lives where and why.</div></div>
+      <div class="ci"><div class="ci-icon">🔒</div><div class="ci-name">Permissions: rwx</div><div class="ci-desc">chmod 755, chmod u+x. Owner/Group/Others. Read=4, Write=2, Execute=1. Octal notation.</div></div>
+      <div class="ci"><div class="ci-icon">👤</div><div class="ci-name">Ownership: chown</div><div class="ci-desc">chown user:group file. Files owned by users. Understanding uid/gid. Root owns everything.</div></div>
+      <div class="ci"><div class="ci-icon">🔗</div><div class="ci-name">Hard & Soft Links</div><div class="ci-desc">ln (hard link) vs ln -s (symlink). Inodes. Hard links share data, symlinks point to paths.</div></div>
+      <div class="ci"><div class="ci-icon">💾</div><div class="ci-name">Disk & Mounts</div><div class="ci-desc">df -h (disk space), du -sh (directory size), mount, umount, /etc/fstab — storage management.</div></div>
+      <div class="ci"><div class="ci-icon">📁</div><div class="ci-name">Special Files</div><div class="ci-desc">/dev/null, /dev/zero, /dev/random, /proc/cpuinfo, /proc/meminfo — virtual filesystems.</div></div>
+      <div class="ci"><div class="ci-icon">🔐</div><div class="ci-name">SUID / SGID / Sticky</div><div class="ci-desc">chmod 4755 (SUID), chmod 2755 (SGID), chmod +t /tmp (sticky). Advanced permission bits.</div></div>
+      <div class="ci"><div class="ci-icon">📊</div><div class="ci-name">Inodes & stat</div><div class="ci-desc">stat file.txt — see inode, permissions, timestamps, block count. Every file is an inode.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">PERMISSIONS DEEP DIVE</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH — PERMISSIONS</div></div>
+      <div class="cb"><pre><span class="cm"># ─── READING PERMISSIONS ───────────────────────────────</span>
+<span class="g1">ls -la</span>
+<span class="g2"># -rwxr-xr-- 1 root fsoc 4096 Jan 1 exploit.sh</span>
+<span class="g2"># ↑ type=file  ↑ owner=rwx  ↑ group=r-x  ↑ others=r--</span>
+
+<span class="cm"># ─── chmod — CHANGE PERMISSIONS ────────────────────────</span>
+<span class="g1">chmod 755 script.sh</span>          <span class="cm"># rwxr-xr-x (standard executable)</span>
+<span class="g1">chmod 644 config.txt</span>         <span class="cm"># rw-r--r-- (standard file)</span>
+<span class="g1">chmod 600 private.key</span>        <span class="cm"># rw------- (owner only!)</span>
+<span class="g1">chmod +x script.sh</span>           <span class="cm"># Add execute for everyone</span>
+<span class="g1">chmod u+x,g-w,o-rwx file</span>    <span class="cm"># Symbolic notation</span>
+<span class="g1">chmod -R 755 /var/www/html</span>   <span class="cm"># Recursive chmod</span>
+
+<span class="cm"># ─── chown — CHANGE OWNERSHIP ──────────────────────────</span>
+<span class="g1">chown user:group file.txt</span>
+<span class="g1">chown -R www-data:www-data /var/www/</span>
+<span class="g1">chown root file</span>              <span class="cm"># Change only user</span>
+<span class="g1">chown :devops file</span>           <span class="cm"># Change only group</span>
+
+<span class="cm"># ─── SPECIAL PERMISSION BITS ───────────────────────────</span>
+<span class="g1">chmod 4755 /usr/bin/passwd</span>   <span class="cm"># SUID — runs as owner</span>
+<span class="g1">find / -perm -4000 2>/dev/null</span> <span class="cm"># Find ALL SUID files</span>
+<span class="g1">chmod +t /tmp</span>                <span class="cm"># Sticky — only owner can delete</span>
+
+<span class="cm"># ─── FILESYSTEM INSPECTION ─────────────────────────────</span>
+<span class="g1">df -h</span>                        <span class="cm"># Disk usage all partitions</span>
+<span class="g1">du -sh /var/log/*</span>            <span class="cm"># Size of each log file</span>
+<span class="g1">stat /etc/passwd</span>             <span class="cm"># Full inode info</span>
+<span class="g1">lsblk</span>                        <span class="cm"># Block devices (drives)</span>
+<span class="g1">mount | column -t</span>            <span class="cm"># All mounted filesystems</span>
+
+<span class="cm"># ─── SPECIAL FILES ─────────────────────────────────────</span>
+<span class="g1">cat /proc/cpuinfo</span>            <span class="cm"># CPU info from kernel</span>
+<span class="g1">cat /proc/meminfo</span>            <span class="cm"># Memory info from kernel</span>
+<span class="g1">ls /dev/sd*</span>                  <span class="cm"># Storage devices</span>
+<span class="g1">dd if=/dev/urandom bs=1M count=10 of=test.bin</span> <span class="cm"># Create 10MB random file</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🔒 PROJECT 2.A — SECURE FILE VAULT SYSTEM</div>
+    <div class="proj-desc">Build a secure directory structure for a fictional company. Implement proper ownership, groups, and permissions so that each "department" can only access their own files. Simulate a real sysadmin permission architecture.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>Create /company/{dev,ops,hr,finance} directories</div>
+      <div class="build-item"><div class="build-dot"></div>Create groups: devteam, opsteam, hrteam</div>
+      <div class="build-item"><div class="build-dot"></div>Set ownership and permissions per department</div>
+      <div class="build-item"><div class="build-dot"></div>Test: verify cross-department access is denied</div>
+      <div class="build-item"><div class="build-dot"></div>Create shared read-only /company/shared folder</div>
+      <div class="build-item"><div class="build-dot"></div>Set sticky bit on shared temp directory</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(1,document.querySelector('[data-phase=\'1\']'))">← PHASE 01</button><button class="nc-btn primary" onclick="go(3,document.querySelector('[data-phase=\'3\']'))">PHASE 03: TEXT WARFARE →</button></div>
+</div>
+
+<!-- ════ PHASE 3: TEXT WARFARE ════ -->
+<div class="phase-section" id="phase-3">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">03</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">TEXT WARFARE</div>
+      <div class="ph-subtitle">⚡ VIM, GREP, AWK, SED, CUT, SORT — TEXT PROCESSING MASTERY</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 10 DAYS</span><span class="meta-tag gold">LEVEL: CORE</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">📝</div><div class="ci-name">Vim Editor</div><div class="ci-desc">Modes: Normal/Insert/Visual. hjkl navigation. :wq :q! dd yy p. :%s/old/new/g substitution.</div></div>
+      <div class="ci"><div class="ci-icon">🔍</div><div class="ci-name">grep — Search Text</div><div class="ci-desc">grep -r -i -n -l -v -E. Regular expressions. The most used Linux command in production.</div></div>
+      <div class="ci"><div class="ci-icon">⚙️</div><div class="ci-name">sed — Stream Editor</div><div class="ci-desc">sed 's/old/new/g', sed -i (in-place edit), sed -n '/pattern/p'. Edit files without opening them.</div></div>
+      <div class="ci"><div class="ci-icon">📊</div><div class="ci-name">awk — Data Processing</div><div class="ci-desc">awk '{print $1,$3}' — extract columns from structured text. NR, NF, FS, OFS built-in vars.</div></div>
+      <div class="ci"><div class="ci-icon">✂️</div><div class="ci-name">cut, sort, uniq</div><div class="ci-desc">cut -d: -f1 /etc/passwd. sort -n -r -k2. uniq -c. The CSV-processing triad.</div></div>
+      <div class="ci"><div class="ci-icon">🔗</div><div class="ci-name">tr, paste, join</div><div class="ci-desc">tr 'a-z' 'A-Z' (translate chars). paste (merge files side by side). join (SQL-like joins).</div></div>
+      <div class="ci"><div class="ci-icon">🧮</div><div class="ci-name">Regular Expressions</div><div class="ci-desc">^ $ . * + ? [] () | \d \w \s — Regex is its own superpower. Master it here.</div></div>
+      <div class="ci"><div class="ci-icon">📁</div><div class="ci-name">xargs — Command Builder</div><div class="ci-desc">find . -name "*.log" | xargs rm — apply commands to lists of arguments. Incredibly powerful.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">TEXT PROCESSING WEAPONS</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH — TEXT TOOLS</div></div>
+      <div class="cb"><pre><span class="cm"># ─── VIM ESSENTIAL COMMANDS ────────────────────────────</span>
+<span class="cm"># i       — enter Insert mode</span>
+<span class="cm"># Esc     — return to Normal mode</span>
+<span class="cm"># :w      — save | :q — quit | :wq — save & quit | :q! — force quit</span>
+<span class="cm"># dd      — delete line | yy — yank (copy) line | p — paste</span>
+<span class="cm"># /word   — search | n — next match | N — prev match</span>
+<span class="cm"># :%s/foo/bar/g — replace ALL foo with bar in file</span>
+<span class="cm"># gg — go top | G — go bottom | :42 — go to line 42</span>
+
+<span class="cm"># ─── GREP — FIND TEXT IN FILES ─────────────────────────</span>
+<span class="g1">grep "error" /var/log/syslog</span>            <span class="cm"># Basic search</span>
+<span class="g1">grep -i "ERROR" /var/log/syslog</span>         <span class="cm"># Case-insensitive</span>
+<span class="g1">grep -r "password" /etc/ 2>/dev/null</span>    <span class="cm"># Recursive search</span>
+<span class="g1">grep -n "FAILED" auth.log</span>               <span class="cm"># Show line numbers</span>
+<span class="g1">grep -v "DEBUG" app.log</span>                 <span class="cm"># Invert — exclude pattern</span>
+<span class="g1">grep -E "^[0-9]{1,3}\.[0-9]{1,3}" access.log</span> <span class="cm"># Regex: IP addresses</span>
+<span class="g1">grep -c "404" access.log</span>                <span class="cm"># Count matches</span>
+
+<span class="cm"># ─── SED — EDIT WITHOUT OPENING ────────────────────────</span>
+<span class="g1">sed 's/http/https/g' config.txt</span>         <span class="cm"># Replace in output</span>
+<span class="g1">sed -i 's/old_pass/new_pass/g' .env</span>     <span class="cm"># Edit file in-place</span>
+<span class="g1">sed -n '10,20p' bigfile.txt</span>             <span class="cm"># Print lines 10-20</span>
+<span class="g1">sed '/^#/d' config.txt</span>                  <span class="cm"># Delete comment lines</span>
+<span class="g1">sed 's/[[:space:]]*$//' file.txt</span>        <span class="cm"># Remove trailing spaces</span>
+
+<span class="cm"># ─── AWK — THE DATA EXTRACTION ENGINE ──────────────────</span>
+<span class="g1">awk '{print $1}' access.log</span>             <span class="cm"># Print first column</span>
+<span class="g1">awk -F: '{print $1, $3}' /etc/passwd</span>   <span class="cm"># username + uid</span>
+<span class="g1">awk '$9 == "404" {print $7}' access.log</span> <span class="cm"># 404 URLs</span>
+<span class="g1">awk '{sum+=$5} END {print sum}' data</span>   <span class="cm"># Sum column 5</span>
+<span class="g1">awk 'NR%2==0' file</span>                      <span class="cm"># Print even lines only</span>
+
+<span class="cm"># ─── CUT / SORT / UNIQ COMBO ───────────────────────────</span>
+<span class="cm"># Find top 10 most-active IPs from Apache log:</span>
+<span class="g1">cut -d' ' -f1 access.log | sort | uniq -c | sort -rn | head -10</span>
+<span class="cm"># Get list of users with bash shell:</span>
+<span class="g1">grep '/bin/bash' /etc/passwd | cut -d: -f1</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🕵️ PROJECT 3.A — LOG INTELLIGENCE ANALYZER</div>
+    <div class="proj-desc">Build a complete log analysis tool using only grep, awk, sed, cut, sort, and uniq. Feed it an Apache/Nginx access log and produce a full threat intelligence report: top IPs, top endpoints, 404s, suspicious patterns.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>Extract top 10 IPs by request count</div>
+      <div class="build-item"><div class="build-dot"></div>Find all 4xx and 5xx error responses</div>
+      <div class="build-item"><div class="build-dot"></div>Extract all unique User-Agent strings</div>
+      <div class="build-item"><div class="build-dot"></div>Detect potential scanning (100+ 404s from same IP)</div>
+      <div class="build-item"><div class="build-dot"></div>Find requests to /admin, /wp-login, /.env</div>
+      <div class="build-item"><div class="build-dot"></div>Generate sed-formatted HTML report output</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(2,document.querySelector('[data-phase=\'2\']'))">← PHASE 02</button><button class="nc-btn primary" onclick="go(4,document.querySelector('[data-phase=\'4\']'))">PHASE 04: PROCESS INTEL →</button></div>
+</div>
+
+<!-- ════ PHASE 4: PROCESSES ════ -->
+<div class="phase-section" id="phase-4">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">04</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">PROCESS INTEL</div>
+      <div class="ph-subtitle">⚡ PROCESSES, SIGNALS, JOBS, SYSTEMD, MONITORING</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag gold">LEVEL: CORE</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">⚙️</div><div class="ci-name">Processes & PIDs</div><div class="ci-desc">ps aux, ps -ef, pstree. Every running program = a process with a unique PID.</div></div>
+      <div class="ci"><div class="ci-icon">📊</div><div class="ci-name">top & htop</div><div class="ci-desc">Real-time process monitor. CPU%, MEM%, load average, zombie processes. htop is prettier.</div></div>
+      <div class="ci"><div class="ci-icon">⚡</div><div class="ci-name">Signals & kill</div><div class="ci-desc">kill -9 PID (SIGKILL), kill -15 (SIGTERM), kill -1 (SIGHUP). killall, pkill by name.</div></div>
+      <div class="ci"><div class="ci-icon">🔄</div><div class="ci-name">fg / bg / jobs</div><div class="ci-desc">Ctrl+Z (suspend), bg (send to background), fg (bring to foreground). & to start in bg.</div></div>
+      <div class="ci"><div class="ci-icon">🏃</div><div class="ci-name">nohup & disown</div><div class="ci-desc">Run processes that survive terminal close. nohup command &. disown %1.</div></div>
+      <div class="ci"><div class="ci-icon">🔧</div><div class="ci-name">systemd & systemctl</div><div class="ci-desc">systemctl start/stop/restart/status/enable service. The modern init system. journalctl for logs.</div></div>
+      <div class="ci"><div class="ci-icon">💾</div><div class="ci-name">lsof & fuser</div><div class="ci-desc">lsof -i :80 (who's using port 80). fuser -k 8080/tcp (kill process on port). Network debugging.</div></div>
+      <div class="ci"><div class="ci-icon">📈</div><div class="ci-name">nice & renice</div><div class="ci-desc">Set process priority (-20 to 19). nice -n 10 command. renice -n -5 PID.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">PROCESS CONTROL COMMANDS</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH — PROCESSES</div></div>
+      <div class="cb"><pre><span class="cm"># ─── VIEWING PROCESSES ─────────────────────────────────</span>
+<span class="g1">ps aux</span>                    <span class="cm"># All processes, all users</span>
+<span class="g1">ps aux | grep nginx</span>       <span class="cm"># Find nginx processes</span>
+<span class="g1">pstree -p</span>                 <span class="cm"># Process tree with PIDs</span>
+<span class="g1">pgrep -l ssh</span>              <span class="cm"># PIDs + names matching ssh</span>
+<span class="g1">top -u www-data</span>           <span class="cm"># Only www-data's processes</span>
+
+<span class="cm"># ─── KILL SIGNALS ──────────────────────────────────────</span>
+<span class="g1">kill -15 1234</span>             <span class="cm"># SIGTERM — graceful shutdown</span>
+<span class="g1">kill -9 1234</span>              <span class="cm"># SIGKILL — force kill</span>
+<span class="g1">kill -1 1234</span>              <span class="cm"># SIGHUP — reload config</span>
+<span class="g1">pkill nginx</span>               <span class="cm"># Kill all nginx by name</span>
+<span class="g1">killall firefox</span>           <span class="cm"># Kill all firefox instances</span>
+
+<span class="cm"># ─── BACKGROUND JOBS ───────────────────────────────────</span>
+<span class="g1">sleep 1000 &</span>              <span class="cm"># Start in background</span>
+<span class="g1">jobs -l</span>                   <span class="cm"># List background jobs</span>
+<span class="g1">fg %1</span>                     <span class="cm"># Bring job 1 to foreground</span>
+<span class="g1">bg %1</span>                     <span class="cm"># Send job 1 to background</span>
+<span class="g1">nohup python3 server.py &</span> <span class="cm"># Survive terminal close</span>
+<span class="g1">disown -h %1</span>              <span class="cm"># Detach from shell</span>
+
+<span class="cm"># ─── SYSTEMD ───────────────────────────────────────────</span>
+<span class="g1">systemctl status nginx</span>    <span class="cm"># Check service status</span>
+<span class="g1">systemctl start nginx</span>
+<span class="g1">systemctl stop nginx</span>
+<span class="g1">systemctl restart nginx</span>
+<span class="g1">systemctl enable nginx</span>    <span class="cm"># Start on boot</span>
+<span class="g1">systemctl disable nginx</span>   <span class="cm"># Don't start on boot</span>
+<span class="g1">journalctl -u nginx -f</span>    <span class="cm"># Live logs for nginx</span>
+<span class="g1">journalctl --since "1 hour ago"</span>
+
+<span class="cm"># ─── PORT & FILE INVESTIGATION ─────────────────────────</span>
+<span class="g1">lsof -i :80</span>               <span class="cm"># Who's listening on port 80</span>
+<span class="g1">lsof -p 1234</span>              <span class="cm"># All files opened by PID 1234</span>
+<span class="g1">ss -tulpn</span>                 <span class="cm"># All listening ports + PIDs</span>
+<span class="g1">fuser -k 3000/tcp</span>         <span class="cm"># Kill whatever's on port 3000</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">📊 PROJECT 4.A — SYSTEM HEALTH MONITOR</div>
+    <div class="proj-desc">Write a bash script that monitors system health every 60 seconds: CPU usage, memory, disk, zombie processes, and top 5 memory-hungry processes. Log alerts when thresholds are breached. Run it as a systemd service.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>Parse CPU% from top/vmstat output</div>
+      <div class="build-item"><div class="build-dot"></div>Check memory usage from /proc/meminfo</div>
+      <div class="build-item"><div class="build-dot"></div>Alert if disk usage &gt; 80%</div>
+      <div class="build-item"><div class="build-dot"></div>Detect zombie processes (ps + grep Z)</div>
+      <div class="build-item"><div class="build-dot"></div>Log top 5 CPU/RAM processes with timestamps</div>
+      <div class="build-item"><div class="build-dot"></div>Create systemd unit file and enable service</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(3,document.querySelector('[data-phase=\'3\']'))">← PHASE 03</button><button class="nc-btn primary" onclick="go(5,document.querySelector('[data-phase=\'5\']'))">PHASE 05: NETWORK RECON →</button></div>
+</div>
+
+<!-- ════ PHASE 5: NETWORKING ════ -->
+<div class="phase-section" id="phase-5">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">05</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">NETWORK RECON</div>
+      <div class="ph-subtitle">⚡ IP, SSH, CURL, NETSTAT, NMAP, TCPDUMP — NETWORK MASTERY</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 10 DAYS</span><span class="meta-tag red">LEVEL: ADVANCED</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">🌐</div><div class="ci-name">ip & ifconfig</div><div class="ci-desc">ip addr, ip route, ip link. Manage interfaces, routing tables, ARP. Modern replacement for ifconfig.</div></div>
+      <div class="ci"><div class="ci-icon">🔑</div><div class="ci-name">SSH Mastery</div><div class="ci-desc">ssh-keygen, ssh-copy-id, ssh tunnels (-L -R -D), ssh config file. Key-based auth is mandatory.</div></div>
+      <div class="ci"><div class="ci-icon">📡</div><div class="ci-name">curl & wget</div><div class="ci-desc">curl -X POST -H headers -d data URL. wget recursively. Test APIs, download files, scrape.</div></div>
+      <div class="ci"><div class="ci-icon">🔍</div><div class="ci-name">nmap — Port Scanner</div><div class="ci-desc">nmap -sV -sC -p- target. Service version detection, script scanning. The recon king.</div></div>
+      <div class="ci"><div class="ci-icon">🕵️</div><div class="ci-name">tcpdump & Wireshark</div><div class="ci-desc">tcpdump -i eth0 -w capture.pcap. Capture and analyze network traffic at packet level.</div></div>
+      <div class="ci"><div class="ci-icon">📊</div><div class="ci-name">ss & netstat</div><div class="ci-desc">ss -tulpn (listening ports). netstat -ant (all connections). See all network activity.</div></div>
+      <div class="ci"><div class="ci-icon">🏓</div><div class="ci-name">DNS Tools</div><div class="ci-desc">dig, nslookup, host. Resolve domains, check DNS records, trace resolution path.</div></div>
+      <div class="ci"><div class="ci-icon">🔧</div><div class="ci-name">SCP & rsync</div><div class="ci-desc">scp file user@host:/path. rsync -avz (fast sync with delta). Transfer files securely.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">NETWORK COMMANDS ARSENAL</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH — NETWORKING</div></div>
+      <div class="cb"><pre><span class="cm"># ─── NETWORK INSPECTION ────────────────────────────────</span>
+<span class="g1">ip addr show</span>              <span class="cm"># All interfaces + IPs</span>
+<span class="g1">ip route show</span>             <span class="cm"># Routing table</span>
+<span class="g1">ss -tulpn</span>                 <span class="cm"># All listening sockets + PIDs</span>
+<span class="g1">netstat -ant | grep LISTEN</span>
+<span class="g1">cat /etc/resolv.conf</span>      <span class="cm"># DNS servers configured</span>
+
+<span class="cm"># ─── SSH MASTERY ───────────────────────────────────────</span>
+<span class="g1">ssh-keygen -t ed25519 -C "your@email.com"</span>
+<span class="g1">ssh-copy-id user@remote-server</span>    <span class="cm"># Push public key</span>
+<span class="g1">ssh -i ~/.ssh/id_ed25519 user@host</span>
+<span class="cm"># SSH LOCAL TUNNEL — access remote port 5432 locally</span>
+<span class="g1">ssh -L 5432:localhost:5432 user@remote-host</span>
+<span class="cm"># SSH DYNAMIC PROXY — route traffic through remote</span>
+<span class="g1">ssh -D 8080 user@remote-host</span>
+<span class="cm"># ~/.ssh/config — define shortcuts</span>
+<span class="g2">Host prod
+    HostName 192.168.1.100
+    User ubuntu
+    IdentityFile ~/.ssh/prod_key
+    Port 2222</span>
+
+<span class="cm"># ─── CURL — HTTP SWISS ARMY KNIFE ──────────────────────</span>
+<span class="g1">curl -I https://example.com</span>         <span class="cm"># Headers only</span>
+<span class="g1">curl -s -o /dev/null -w "%{http_code}" URL</span> <span class="cm"># Just status code</span>
+<span class="g1">curl -X POST -H "Content-Type: application/json" \
+  -d '{"key":"value"}' https://api.example.com/endpoint</span>
+<span class="g1">curl -u user:pass https://api.example.com</span> <span class="cm"># Basic auth</span>
+<span class="g1">curl -L -O https://example.com/file.tar.gz</span> <span class="cm"># Download + follow redirects</span>
+
+<span class="cm"># ─── NMAP RECON ────────────────────────────────────────</span>
+<span class="g1">nmap -sn 192.168.1.0/24</span>   <span class="cm"># Ping sweep — find live hosts</span>
+<span class="g1">nmap -p 80,443,22 host</span>    <span class="cm"># Scan specific ports</span>
+<span class="g1">nmap -sV -sC target</span>       <span class="cm"># Version + default scripts</span>
+<span class="g1">nmap -p- -T4 target</span>       <span class="cm"># All 65535 ports (fast)</span>
+<span class="g1">nmap -O target</span>            <span class="cm"># OS detection</span>
+
+<span class="cm"># ─── DNS & TRAFFIC ─────────────────────────────────────</span>
+<span class="g1">dig google.com ANY</span>        <span class="cm"># All DNS records</span>
+<span class="g1">dig +trace google.com</span>     <span class="cm"># Trace full DNS resolution</span>
+<span class="g1">tcpdump -i eth0 -nn -w cap.pcap 'port 80'</span>
+<span class="g1">rsync -avz --progress /local/ user@host:/remote/</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🔭 PROJECT 5.A — NETWORK RECON TOOLKIT</div>
+    <div class="proj-desc">Build a bash-based network reconnaissance script that takes a target IP range, performs host discovery, port scanning, service detection, and DNS lookups — then generates a structured recon report. Use on your own lab network only.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>Ping sweep to find live hosts in subnet</div>
+      <div class="build-item"><div class="build-dot"></div>Port scan each live host with nmap</div>
+      <div class="build-item"><div class="build-dot"></div>Reverse DNS lookup for each IP</div>
+      <div class="build-item"><div class="build-dot"></div>Check if SSH/HTTP/HTTPS ports are open</div>
+      <div class="build-item"><div class="build-dot"></div>Generate JSON report of all findings</div>
+      <div class="build-item"><div class="build-dot"></div>Colored terminal output with timestamps</div>
+    </div>
+    <div class="warn" style="margin-top:14px"><span style="font-size:15px;flex-shrink:0">⚠️</span><div class="warn-txt">ETHICAL USE ONLY: Only run network scans on networks you own or have explicit written permission to test. Unauthorized scanning is illegal in most countries. Always use a lab environment for practice.</div></div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(4,document.querySelector('[data-phase=\'4\']'))">← PHASE 04</button><button class="nc-btn primary" onclick="go(6,document.querySelector('[data-phase=\'6\']'))">PHASE 06: SHELL SCRIPTING →</button></div>
+</div>
+
+<!-- ════ PHASE 6: SHELL SCRIPTING ════ -->
+<div class="phase-section" id="phase-6">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">06</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">SHELL SCRIPTING</div>
+      <div class="ph-subtitle">⚡ BASH SCRIPTING — VARIABLES, LOOPS, FUNCTIONS, AUTOMATION</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 2 WEEKS</span><span class="meta-tag red">LEVEL: ADVANCED</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">📝</div><div class="ci-name">Script Structure</div><div class="ci-desc">#!/bin/bash shebang. chmod +x. exit codes 0=success. $? check last exit code.</div></div>
+      <div class="ci"><div class="ci-icon">📦</div><div class="ci-name">Variables & Arrays</div><div class="ci-desc">VAR=value, $VAR, ${VAR}, local var. Arrays: arr=() arr[0] "${arr[@]}". Env variables.</div></div>
+      <div class="ci"><div class="ci-icon">🔀</div><div class="ci-name">Conditionals</div><div class="ci-desc">if/elif/else/fi. [ ] vs [[ ]]. Test: -f (file), -d (dir), -z (empty), -eq -ne -gt -lt.</div></div>
+      <div class="ci"><div class="ci-icon">🔁</div><div class="ci-name">Loops</div><div class="ci-desc">for, while, until, for..in. C-style for ((i=0;i&lt;10;i++)). Loop over files, arrays, output.</div></div>
+      <div class="ci"><div class="ci-icon">⚙️</div><div class="ci-name">Functions</div><div class="ci-desc">function_name() { } with $1 $2 positional args. local variables. Return values via echo.</div></div>
+      <div class="ci"><div class="ci-icon">📥</div><div class="ci-name">Input & Arguments</div><div class="ci-desc">$1 $2 $@ $# $0. read -p "prompt" VAR. getopts for flags: -f -v -h.</div></div>
+      <div class="ci"><div class="ci-icon">🔧</div><div class="ci-name">String Operations</div><div class="ci-desc">${#var} length, ${var:0:5} slice, ${var//old/new} replace, ${var^^} uppercase.</div></div>
+      <div class="ci"><div class="ci-icon">⚡</div><div class="ci-name">Error Handling</div><div class="ci-desc">set -e (exit on error), set -u (undefined vars), trap 'cleanup' EXIT. Robust scripts.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">BASH SCRIPTING PATTERNS</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH SCRIPT TEMPLATE</div></div>
+      <div class="cb"><pre><span class="g2">#!/bin/bash</span>
+<span class="cm"># ════════════════════════════════════════════════</span>
+<span class="cm"># Mr. Robot Deployment Script — Production Grade</span>
+<span class="cm"># Usage: ./deploy.sh -e prod -v 2.1.0 -r</span>
+<span class="cm"># ════════════════════════════════════════════════</span>
+<span class="g1">set -euo pipefail</span>             <span class="cm"># Exit on error, undefined vars</span>
+<span class="g2">IFS=$'\n\t'</span>                   <span class="cm"># Safer word splitting</span>
+
+<span class="cm"># ─── COLORS ────────────────────────────────────</span>
+<span class="g2">RED='\033[0;31m'   GREEN='\033[0;32m'
+YELLOW='\033[1;33m' CYAN='\033[0;36m' NC='\033[0m'</span>
+
+<span class="cm"># ─── LOGGING FUNCTIONS ─────────────────────────</span>
+<span class="g1">log_info()</span>  { <span class="g1">echo -e "${GREEN}[INFO]${NC} $1"</span>; }
+<span class="g1">log_warn()</span>  { <span class="g1">echo -e "${YELLOW}[WARN]${NC} $1"</span>; }
+<span class="g1">log_error()</span> { <span class="g1">echo -e "${RED}[ERROR]${NC} $1" >&2</span>; }
+
+<span class="cm"># ─── VARIABLES ────────────────────────────────</span>
+<span class="g2">ENV=""  VERSION=""  ROLLBACK=false
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="/backups/${TIMESTAMP}"</span>
+
+<span class="cm"># ─── ARGUMENT PARSING ─────────────────────────</span>
+<span class="g1">while getopts "e:v:rh" opt; do</span>
+  <span class="g1">case $opt in</span>
+    e) <span class="g2">ENV="$OPTARG"</span> ;;
+    v) <span class="g2">VERSION="$OPTARG"</span> ;;
+    r) <span class="g2">ROLLBACK=true</span> ;;
+    h) <span class="g1">echo "Usage: $0 -e ENV -v VERSION [-r]"</span>; <span class="g1">exit 0</span> ;;
+    ?) <span class="g1">log_error "Unknown option"</span>; <span class="g1">exit 1</span> ;;
+  <span class="g1">esac</span>
+<span class="g1">done</span>
+
+<span class="cm"># ─── VALIDATION ───────────────────────────────</span>
+<span class="g1">validate_env()</span> {
+  <span class="g1">if [[ -z "$ENV" ]]; then</span>
+    <span class="g1">log_error "Environment required. Use -e prod|staging"</span>
+    <span class="g1">exit 1</span>
+  <span class="g1">fi</span>
+}
+
+<span class="cm"># ─── CLEANUP ON EXIT ──────────────────────────</span>
+<span class="g1">cleanup()</span> { <span class="g1">log_warn "Cleanup triggered"</span>; }
+<span class="g1">trap cleanup EXIT</span>
+
+<span class="cm"># ─── MAIN ─────────────────────────────────────</span>
+<span class="g1">main()</span> {
+  <span class="g1">validate_env</span>
+  <span class="g1">log_info "Deploying v${VERSION} to ${ENV}"</span>
+  <span class="cm"># Loop over servers in environment</span>
+  <span class="g1">while IFS= read -r server; do</span>
+    <span class="g1">log_info "Deploying to: $server"</span>
+    <span class="g1">ssh "$server" "sudo systemctl restart app"</span> || <span class="rd">\</span>
+      <span class="g1">log_warn "Failed on $server"</span>
+  <span class="g1">done < "servers_${ENV}.txt"</span>
+}
+
+<span class="g1">main "$@"</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🤖 PROJECT 6.A — SYSADMIN AUTOMATION SUITE</div>
+    <div class="proj-desc">Build a collection of production-grade bash scripts used by real sysadmins: server backup script, user creation script with password policy, log rotation, and a deployment script with rollback capability.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>backup.sh — tar + rsync with timestamped archives</div>
+      <div class="build-item"><div class="build-dot"></div>create_user.sh — add user, set groups, force password change</div>
+      <div class="build-item"><div class="build-dot"></div>rotate_logs.sh — compress + delete logs older than 30 days</div>
+      <div class="build-item"><div class="build-dot"></div>deploy.sh — pull git, restart service, verify, rollback on fail</div>
+      <div class="build-item"><div class="build-dot"></div>All scripts: colored output, error handling, logging</div>
+      <div class="build-item"><div class="build-dot"></div>getopts argument parsing for all scripts</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(5,document.querySelector('[data-phase=\'5\']'))">← PHASE 05</button><button class="nc-btn primary" onclick="go(7,document.querySelector('[data-phase=\'7\']'))">PHASE 07: USER CONTROL →</button></div>
+</div>
+
+<!-- ════ PHASE 7: USER MANAGEMENT ════ -->
+<div class="phase-section" id="phase-7">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">07</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">USER CONTROL</div>
+      <div class="ph-subtitle">⚡ USERS, GROUPS, SUDO, PAM, /ETC/PASSWD DEEP DIVE</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag red">LEVEL: ADVANCED</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">👤</div><div class="ci-name">/etc/passwd & /etc/shadow</div><div class="ci-desc">User database structure: username:x:uid:gid:comment:home:shell. Shadow stores hashed passwords.</div></div>
+      <div class="ci"><div class="ci-icon">👥</div><div class="ci-name">useradd / usermod / userdel</div><div class="ci-desc">Create, modify, delete users. -m (create home), -s (shell), -G (groups), -L (lock account).</div></div>
+      <div class="ci"><div class="ci-icon">🔑</div><div class="ci-name">sudo & /etc/sudoers</div><div class="ci-desc">visudo, sudoers syntax, NOPASSWD. The privilege escalation control center. Never edit directly.</div></div>
+      <div class="ci"><div class="ci-icon">🏷️</div><div class="ci-name">Groups & groupadd</div><div class="ci-desc">groupadd, groupmod, groupdel. usermod -aG group user. /etc/group format. Primary vs secondary.</div></div>
+      <div class="ci"><div class="ci-icon">🔐</div><div class="ci-name">passwd & chage</div><div class="ci-desc">Set/change passwords. chage — password aging policy. Expiry dates, min/max days.</div></div>
+      <div class="ci"><div class="ci-icon">🔒</div><div class="ci-name">PAM — Linux Auth</div><div class="ci-desc">/etc/pam.d/ — Pluggable Auth Modules. Control auth, session, password, account policies.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">USER & PRIVILEGE COMMANDS</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH — USER MANAGEMENT</div></div>
+      <div class="cb"><pre><span class="cm"># ─── CREATE & MANAGE USERS ─────────────────────────────</span>
+<span class="g1">useradd -m -s /bin/bash -c "Mr Robot" elliot</span>
+<span class="g1">passwd elliot</span>                     <span class="cm"># Set password</span>
+<span class="g1">usermod -aG sudo elliot</span>           <span class="cm"># Add to sudo group</span>
+<span class="g1">usermod -aG docker,dev elliot</span>     <span class="cm"># Add to multiple groups</span>
+<span class="g1">usermod -L elliot</span>                 <span class="cm"># Lock account</span>
+<span class="g1">usermod -U elliot</span>                 <span class="cm"># Unlock account</span>
+<span class="g1">userdel -r elliot</span>                 <span class="cm"># Delete user + home dir</span>
+
+<span class="cm"># ─── DECODE /etc/passwd ────────────────────────────────</span>
+<span class="g2"># Format: username:x:uid:gid:comment:home:shell</span>
+<span class="g1">cat /etc/passwd | cut -d: -f1,3,7</span> <span class="cm"># username, uid, shell</span>
+<span class="g1">getent passwd elliot</span>              <span class="cm"># Get user entry</span>
+<span class="g1">id elliot</span>                         <span class="cm"># uid, gid, groups</span>
+
+<span class="cm"># ─── SUDOERS — PRIVILEGE CONTROL ───────────────────────</span>
+<span class="g1">visudo</span>                            <span class="cm"># Safe editor for sudoers</span>
+<span class="g2"># In /etc/sudoers:</span>
+<span class="g2">elliot  ALL=(ALL:ALL) ALL           # Full sudo</span>
+<span class="g2">elliot  ALL=(ALL) NOPASSWD: /bin/systemctl restart nginx</span>
+<span class="g2">%devops ALL=(ALL) NOPASSWD: ALL    # Group sudo</span>
+<span class="g1">sudo -l</span>                           <span class="cm"># List your sudo rights</span>
+<span class="g1">sudo -u www-data id</span>               <span class="cm"># Run command as different user</span>
+
+<span class="cm"># ─── PASSWORD POLICY ───────────────────────────────────</span>
+<span class="g1">chage -l elliot</span>                   <span class="cm"># View password aging</span>
+<span class="g1">chage -M 90 -m 7 -W 14 elliot</span>    <span class="cm"># 90 day max, 7 min, 14 warn</span>
+<span class="g1">chage -E 2025-12-31 elliot</span>        <span class="cm"># Account expires date</span>
+
+<span class="cm"># ─── GROUPS ────────────────────────────────────────────</span>
+<span class="g1">groupadd devops</span>
+<span class="g1">groupmod -n sre devops</span>            <span class="cm"># Rename group</span>
+<span class="g1">cat /etc/group | grep elliot</span>      <span class="cm"># Groups elliot belongs to</span>
+<span class="g1">newgrp docker</span>                     <span class="cm"># Switch primary group</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🏢 PROJECT 7.A — ENTERPRISE USER PROVISIONING SYSTEM</div>
+    <div class="proj-desc">Build a bash script that reads a CSV of new employees and provisions their accounts: creates users with proper groups, sets initial passwords, applies password aging policy, creates home directories with correct permissions, and sends a welcome message.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>Read employees.csv: name, department, role</div>
+      <div class="build-item"><div class="build-dot"></div>Create user with username from first.last format</div>
+      <div class="build-item"><div class="build-dot"></div>Assign to correct group based on department</div>
+      <div class="build-item"><div class="build-dot"></div>Set password policy with chage</div>
+      <div class="build-item"><div class="build-dot"></div>Create ~/onboarding/ folder with welcome docs</div>
+      <div class="build-item"><div class="build-dot"></div>Log all actions with timestamp to audit.log</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(6,document.querySelector('[data-phase=\'6\']'))">← PHASE 06</button><button class="nc-btn primary" onclick="go(8,document.querySelector('[data-phase=\'8\']'))">PHASE 08: PACKAGE OPS →</button></div>
+</div>
+
+<!-- ════ PHASE 8: PACKAGES ════ -->
+<div class="phase-section" id="phase-8">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">08</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">PACKAGE OPS</div>
+      <div class="ph-subtitle">⚡ APT, DNF, SNAP, COMPILE FROM SOURCE, PACKAGE MANAGEMENT</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 5 DAYS</span><span class="meta-tag red">LEVEL: ADVANCED</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">📦</div><div class="ci-name">apt — Debian/Ubuntu</div><div class="ci-desc">apt update, apt upgrade, apt install, apt remove, apt autoremove. dpkg -l (list). /etc/apt/sources.list.</div></div>
+      <div class="ci"><div class="ci-icon">🔴</div><div class="ci-name">dnf/yum — RHEL/Fedora</div><div class="ci-desc">dnf install, dnf update, dnf search. rpm -qa (list all). yum history. Repo management.</div></div>
+      <div class="ci"><div class="ci-icon">📸</div><div class="ci-name">snap & flatpak</div><div class="ci-desc">snap install code. flatpak install. Sandboxed universal packages. Different from native pkgs.</div></div>
+      <div class="ci"><div class="ci-icon">🔧</div><div class="ci-name">Compile from Source</div><div class="ci-desc">./configure, make, make install. Installing packages not in repos. Build dependencies.</div></div>
+      <div class="ci"><div class="ci-icon">📋</div><div class="ci-name">PPA & Custom Repos</div><div class="ci-desc">add-apt-repository ppa:name. Import GPG keys. Add third-party repositories safely.</div></div>
+      <div class="ci"><div class="ci-icon">🔍</div><div class="ci-name">Package Investigation</div><div class="ci-desc">apt-cache show pkg, dpkg -L pkg (list files), which/whereis, locate, apt-rdepends.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">PACKAGE MANAGEMENT MASTERY</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH — PACKAGES</div></div>
+      <div class="cb"><pre><span class="cm"># ─── APT — Debian/Ubuntu ───────────────────────────────</span>
+<span class="g1">sudo apt update</span>                   <span class="cm"># Refresh package lists</span>
+<span class="g1">sudo apt upgrade -y</span>               <span class="cm"># Upgrade all packages</span>
+<span class="g1">sudo apt install -y nginx git vim</span> <span class="cm"># Install multiple</span>
+<span class="g1">sudo apt remove nginx</span>             <span class="cm"># Remove (keep config)</span>
+<span class="g1">sudo apt purge nginx</span>              <span class="cm"># Remove + delete config</span>
+<span class="g1">sudo apt autoremove</span>               <span class="cm"># Remove orphaned deps</span>
+<span class="g1">apt list --installed</span>              <span class="cm"># All installed packages</span>
+<span class="g1">apt-cache search "web server"</span>     <span class="cm"># Search packages</span>
+<span class="g1">dpkg -l | grep nginx</span>             <span class="cm"># Is nginx installed?</span>
+<span class="g1">dpkg -L nginx</span>                    <span class="cm"># Files installed by nginx</span>
+
+<span class="cm"># ─── COMPILE FROM SOURCE ───────────────────────────────</span>
+<span class="cm"># Install a tool not in the apt repo:</span>
+<span class="g1">sudo apt install -y build-essential libssl-dev</span>
+<span class="g1">wget https://example.com/tool-1.0.tar.gz</span>
+<span class="g1">tar -xzf tool-1.0.tar.gz && cd tool-1.0/</span>
+<span class="g1">./configure --prefix=/usr/local</span>  <span class="cm"># Check deps, set install path</span>
+<span class="g1">make -j$(nproc)</span>                  <span class="cm"># Compile using all CPU cores</span>
+<span class="g1">sudo make install</span>                <span class="cm"># Install to /usr/local/</span>
+<span class="g1">which tool && tool --version</span>     <span class="cm"># Verify install</span>
+
+<span class="cm"># ─── HOLD PACKAGES ─────────────────────────────────────</span>
+<span class="g1">sudo apt-mark hold linux-image-*</span> <span class="cm"># Don't upgrade kernel</span>
+<span class="g1">sudo apt-mark unhold linux-image-*</span>
+
+<span class="cm"># ─── UNATTENDED UPGRADES (security-only auto-updates) ──</span>
+<span class="g1">sudo apt install unattended-upgrades</span>
+<span class="g1">sudo dpkg-reconfigure unattended-upgrades</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🔧 PROJECT 8.A — SERVER BOOTSTRAP SCRIPT</div>
+    <div class="proj-desc">Build a complete server bootstrap script that configures a fresh Ubuntu server from scratch: updates system, installs a curated toolset, hardens SSH, creates a deploy user, sets up a basic web server — fully automated, idempotent.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>System update + upgrade with error handling</div>
+      <div class="build-item"><div class="build-dot"></div>Install: nginx, git, vim, htop, ufw, fail2ban</div>
+      <div class="build-item"><div class="build-dot"></div>Create deploy user with SSH key auth only</div>
+      <div class="build-item"><div class="build-dot"></div>Configure UFW firewall rules</div>
+      <div class="build-item"><div class="build-dot"></div>Enable unattended security upgrades</div>
+      <div class="build-item"><div class="build-dot"></div>Idempotent: safe to run multiple times</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(7,document.querySelector('[data-phase=\'7\']'))">← PHASE 07</button><button class="nc-btn primary" onclick="go(9,document.querySelector('[data-phase=\'9\']'))">PHASE 09: SYSTEM HARDENING →</button></div>
+</div>
+
+<!-- ════ PHASE 9: HARDENING ════ -->
+<div class="phase-section" id="phase-9">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">09</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">SYSTEM HARDENING</div>
+      <div class="ph-subtitle">⚡ UFW, IPTABLES, FAIL2BAN, SSH HARDENING, AUDITD</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 10 DAYS</span><span class="meta-tag red">LEVEL: ELITE</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">🛡️</div><div class="ci-name">UFW — Uncomplicated Firewall</div><div class="ci-desc">ufw allow/deny/status/enable. The friendly frontend to iptables for Ubuntu servers.</div></div>
+      <div class="ci"><div class="ci-icon">🔥</div><div class="ci-name">iptables & nftables</div><div class="ci-desc">The actual Linux firewall. INPUT/OUTPUT/FORWARD chains. ACCEPT/DROP/REJECT. -A -I -D rules.</div></div>
+      <div class="ci"><div class="ci-icon">🚫</div><div class="ci-name">fail2ban</div><div class="ci-desc">Auto-ban IPs with too many failed login attempts. Protects SSH, nginx, postfix. Custom jail rules.</div></div>
+      <div class="ci"><div class="ci-icon">🔐</div><div class="ci-name">SSH Hardening</div><div class="ci-desc">Disable root login, disable password auth, change port, AllowUsers, MaxAuthTries, idle timeout.</div></div>
+      <div class="ci"><div class="ci-icon">📋</div><div class="ci-name">auditd — Audit Logging</div><div class="ci-desc">Track file access, user commands, privilege escalation. auditctl, ausearch, aureport.</div></div>
+      <div class="ci"><div class="ci-icon">🔍</div><div class="ci-name">Lynis — Security Audit</div><div class="ci-desc">lynis audit system — scan your own system for vulnerabilities and misconfigs. Score yourself.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">HARDENING COMMANDS</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">BASH — SECURITY</div></div>
+      <div class="cb"><pre><span class="cm"># ─── UFW FIREWALL ──────────────────────────────────────</span>
+<span class="g1">sudo ufw default deny incoming</span>    <span class="cm"># Block everything by default</span>
+<span class="g1">sudo ufw default allow outgoing</span>
+<span class="g1">sudo ufw allow ssh</span>               <span class="cm"># Allow SSH (port 22)</span>
+<span class="g1">sudo ufw allow 80/tcp</span>            <span class="cm"># Allow HTTP</span>
+<span class="g1">sudo ufw allow 443/tcp</span>           <span class="cm"># Allow HTTPS</span>
+<span class="g1">sudo ufw allow from 10.0.0.0/8 to any port 5432</span> <span class="cm"># DB only from internal</span>
+<span class="g1">sudo ufw enable</span>
+<span class="g1">sudo ufw status verbose</span>
+
+<span class="cm"># ─── SSH HARDENING — /etc/ssh/sshd_config ──────────────</span>
+<span class="g2">PermitRootLogin no             # Never allow root SSH</span>
+<span class="g2">PasswordAuthentication no      # Keys only — no passwords</span>
+<span class="g2">Port 2222                      # Change from default 22</span>
+<span class="g2">AllowUsers elliot deploy       # Whitelist specific users</span>
+<span class="g2">MaxAuthTries 3                 # 3 tries before disconnect</span>
+<span class="g2">ClientAliveInterval 300        # Disconnect idle after 5min</span>
+<span class="g2">X11Forwarding no               # Disable X11</span>
+<span class="g2">Protocol 2                     # Only SSHv2</span>
+<span class="g1">sudo systemctl restart sshd</span>   <span class="cm"># Apply changes</span>
+
+<span class="cm"># ─── FAIL2BAN ──────────────────────────────────────────</span>
+<span class="g1">sudo apt install fail2ban</span>
+<span class="cm"># Create /etc/fail2ban/jail.local:</span>
+<span class="g2">[sshd]
+enabled  = true
+port     = 2222
+filter   = sshd
+logpath  = /var/log/auth.log
+maxretry = 3
+bantime  = 3600    # 1 hour ban
+findtime = 600     # 10 minute window</span>
+<span class="g1">sudo systemctl enable --now fail2ban</span>
+<span class="g1">sudo fail2ban-client status sshd</span>  <span class="cm"># Check banned IPs</span>
+
+<span class="cm"># ─── AUDIT LOGGING ─────────────────────────────────────</span>
+<span class="g1">sudo apt install auditd</span>
+<span class="g1">sudo auditctl -w /etc/passwd -p wa -k passwd_changes</span>
+<span class="g1">sudo auditctl -w /etc/sudoers -p wa -k sudoers_changes</span>
+<span class="g1">sudo ausearch -k passwd_changes</span>  <span class="cm"># View passwd audit events</span>
+<span class="g1">sudo aureport --summary</span>          <span class="cm"># Full audit summary</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🛡️ PROJECT 9.A — SERVER HARDENING PLAYBOOK</div>
+    <div class="proj-desc">Write a complete server hardening script + documentation that takes a freshly provisioned Ubuntu server and brings it to CIS Benchmark compliance. Score it before and after with Lynis. Aim for 85+ score.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>Run Lynis before — record baseline score</div>
+      <div class="build-item"><div class="build-dot"></div>Configure UFW with minimal open ports</div>
+      <div class="build-item"><div class="build-dot"></div>Harden sshd_config with all best practices</div>
+      <div class="build-item"><div class="build-dot"></div>Install and configure fail2ban for SSH + web</div>
+      <div class="build-item"><div class="build-dot"></div>Set up auditd rules for sensitive files</div>
+      <div class="build-item"><div class="build-dot"></div>Run Lynis after — achieve 85+ hardening score</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(8,document.querySelector('[data-phase=\'8\']'))">← PHASE 08</button><button class="nc-btn primary" onclick="go(10,document.querySelector('[data-phase=\'10\']'))">PHASE 10: AUTO ENGINE →</button></div>
+</div>
+
+<!-- ════ PHASE 10: AUTOMATION ════ -->
+<div class="phase-section" id="phase-10">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">10</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">AUTO ENGINE</div>
+      <div class="ph-subtitle">⚡ CRON, SYSTEMD TIMERS, MONITORING, ALERTING</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag red">LEVEL: ELITE</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">⏰</div><div class="ci-name">cron & crontab</div><div class="ci-desc">crontab -e, crontab -l. Minute/Hour/Day/Month/Weekday. @reboot, @daily shortcuts.</div></div>
+      <div class="ci"><div class="ci-icon">🔧</div><div class="ci-name">systemd Timers</div><div class="ci-desc">Modern cron alternative. .timer unit files, OnCalendar syntax. systemctl list-timers.</div></div>
+      <div class="ci"><div class="ci-icon">📊</div><div class="ci-name">System Monitoring</div><div class="ci-desc">vmstat, iostat, sar, dstat. Understanding load average, I/O wait, context switches.</div></div>
+      <div class="ci"><div class="ci-icon">📧</div><div class="ci-name">Alerting</div><div class="ci-desc">Send email alerts from scripts. curl to Slack/Telegram webhooks. Notify on threshold breach.</div></div>
+      <div class="ci"><div class="ci-icon">📁</div><div class="ci-name">logrotate</div><div class="ci-desc">Configure /etc/logrotate.d/ — auto compress, rotate, and delete old log files. Essential on servers.</div></div>
+      <div class="ci"><div class="ci-icon">📈</div><div class="ci-name">at Command</div><div class="ci-desc">at command for one-time scheduled tasks: echo "shutdown -h now" | at 23:00</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CRON & SCHEDULING MASTERY</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">CRON & SYSTEMD TIMERS</div></div>
+      <div class="cb"><pre><span class="cm"># ─── CRONTAB SYNTAX ────────────────────────────────────</span>
+<span class="g2"># ┌───── minute (0-59)</span>
+<span class="g2"># │ ┌─── hour (0-23)</span>
+<span class="g2"># │ │ ┌─ day of month (1-31)</span>
+<span class="g2"># │ │ │ ┌ month (1-12)</span>
+<span class="g2"># │ │ │ │ ┌ day of week (0=Sun)</span>
+<span class="g2"># * * * * *  command</span>
+
+<span class="g1">crontab -e</span>                    <span class="cm"># Edit your crontab</span>
+<span class="cm"># Run backup every day at 2:30am</span>
+<span class="g2">30 2 * * * /home/elliot/backup.sh >> /var/log/backup.log 2>&1</span>
+<span class="cm"># Run every 5 minutes</span>
+<span class="g2">*/5 * * * * /opt/monitor.sh</span>
+<span class="cm"># Run on reboot</span>
+<span class="g2">@reboot /opt/startup.sh</span>
+<span class="cm"># Run first day of month at midnight</span>
+<span class="g2">0 0 1 * * /opt/monthly-report.sh</span>
+
+<span class="cm"># ─── SYSTEMD TIMER (better than cron!) ─────────────────</span>
+<span class="cm"># Create /etc/systemd/system/backup.service</span>
+<span class="g2">[Unit]
+Description=Daily Backup Service
+
+[Service]
+Type=oneshot
+ExecStart=/home/elliot/backup.sh
+User=elliot</span>
+
+<span class="cm"># Create /etc/systemd/system/backup.timer</span>
+<span class="g2">[Unit]
+Description=Run backup daily at 2:30am
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target</span>
+
+<span class="g1">sudo systemctl enable --now backup.timer</span>
+<span class="g1">systemctl list-timers</span>         <span class="cm"># See all timers + next run</span>
+
+<span class="cm"># ─── MONITORING COMBO ──────────────────────────────────</span>
+<span class="g1">vmstat 1 5</span>                   <span class="cm"># System stats every 1s, 5 times</span>
+<span class="g1">iostat -x 1</span>                  <span class="cm"># Disk I/O stats</span>
+<span class="g1">free -h</span>                      <span class="cm"># Memory usage</span>
+<span class="g1">sar -u 1 5</span>                   <span class="cm"># CPU usage history</span>
+<span class="g1">dstat -cdngy</span>                  <span class="cm"># CPU/disk/net/memory live</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">⏰ PROJECT 10.A — AUTOMATED OPERATIONS PLATFORM</div>
+    <div class="proj-desc">Build a complete automated operations platform: scheduled backup system with Telegram alerts, system health monitor that alerts when CPU/RAM/disk breach thresholds, and a weekly report generator — all wired to systemd timers.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>backup.sh with tar + rsync + timestamp rotation</div>
+      <div class="build-item"><div class="build-dot"></div>health-monitor.sh alerts via Telegram bot API</div>
+      <div class="build-item"><div class="build-dot"></div>weekly-report.sh: disk trends, failed logins, uptimes</div>
+      <div class="build-item"><div class="build-dot"></div>All three wired to systemd .timer units</div>
+      <div class="build-item"><div class="build-dot"></div>Configure logrotate for all script logs</div>
+      <div class="build-item"><div class="build-dot"></div>All scripts have set -euo pipefail + proper logging</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(9,document.querySelector('[data-phase=\'9\']'))">← PHASE 09</button><button class="nc-btn primary" onclick="go(11,document.querySelector('[data-phase=\'11\']'))">PHASE 11: CONTAINER TECH →</button></div>
+</div>
+
+<!-- ════ PHASE 11: DOCKER ════ -->
+<div class="phase-section" id="phase-11">
+  <div class="phase-hdr">
+    <div class="ph-badge"><div class="ph-badge-num">11</div><div class="ph-badge-lbl">PHASE</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title">CONTAINER TECH</div>
+      <div class="ph-subtitle">⚡ DOCKER, NAMESPACES, VOLUMES, COMPOSE, REGISTRIES</div>
+      <div class="ph-meta"><span class="meta-tag">⏱ 2 WEEKS</span><span class="meta-tag red">LEVEL: ELITE</span></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">CONCEPTS YOU WILL MASTER</div>
+    <div class="cg">
+      <div class="ci"><div class="ci-icon">🐳</div><div class="ci-name">Docker Fundamentals</div><div class="ci-desc">Images vs containers. Layers. docker run/build/pull/push/ps/exec. The container lifecycle.</div></div>
+      <div class="ci"><div class="ci-icon">📄</div><div class="ci-name">Dockerfile</div><div class="ci-desc">FROM, RUN, COPY, ENV, EXPOSE, CMD, ENTRYPOINT. Multi-stage builds. Layer caching.</div></div>
+      <div class="ci"><div class="ci-icon">💾</div><div class="ci-name">Volumes & Mounts</div><div class="ci-desc">-v host:container, named volumes, tmpfs mounts. Persistent data outside container lifecycle.</div></div>
+      <div class="ci"><div class="ci-icon">🌐</div><div class="ci-name">Docker Networking</div><div class="ci-desc">Bridge, host, none networks. docker network create. Container DNS. Port mapping -p 8080:80.</div></div>
+      <div class="ci"><div class="ci-icon">🎻</div><div class="ci-name">Docker Compose</div><div class="ci-desc">docker-compose.yml — define multi-container apps. services, volumes, networks, depends_on.</div></div>
+      <div class="ci"><div class="ci-icon">🔧</div><div class="ci-name">Linux Namespaces</div><div class="ci-desc">pid, net, mnt, uts, ipc namespaces. How containers actually work under the hood. cgroups.</div></div>
+    </div>
+  </div>
+  <div class="gc">
+    <div class="gc-title">DOCKER MASTERY COMMANDS</div>
+    <div class="code-wrap">
+      <div class="code-hdr"><div class="cd cdr"></div><div class="cd cdy"></div><div class="cd cdg"></div><div class="code-lang">DOCKERFILE + COMPOSE</div></div>
+      <div class="cb"><pre><span class="cm"># ─── ESSENTIAL DOCKER COMMANDS ─────────────────────────</span>
+<span class="g1">docker run -it ubuntu bash</span>        <span class="cm"># Interactive Ubuntu container</span>
+<span class="g1">docker run -d -p 8080:80 nginx</span>    <span class="cm"># Nginx in background</span>
+<span class="g1">docker ps</span>                         <span class="cm"># Running containers</span>
+<span class="g1">docker ps -a</span>                      <span class="cm"># All containers (incl stopped)</span>
+<span class="g1">docker exec -it container_id bash</span> <span class="cm"># Shell into running container</span>
+<span class="g1">docker logs -f container_id</span>       <span class="cm"># Live container logs</span>
+<span class="g1">docker images</span>                     <span class="cm"># List local images</span>
+<span class="g1">docker rmi image_name</span>             <span class="cm"># Remove image</span>
+<span class="g1">docker system prune -af</span>           <span class="cm"># Clean everything unused</span>
+<span class="g1">docker stats</span>                      <span class="cm"># Live resource usage</span>
+
+<span class="cm"># ─── DOCKERFILE (Multi-stage Python app) ───────────────</span>
+<span class="g2">FROM python:3.12-slim AS builder
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.12-slim AS production
+WORKDIR /app
+COPY --from=builder /usr/local/lib/python3.12 /usr/local/lib/python3.12
+COPY . .
+RUN useradd -m appuser && chown -R appuser:appuser /app
+USER appuser
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD curl -f http://localhost:8000/health || exit 1
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0"]</span>
+
+<span class="cm"># ─── DOCKER COMPOSE ────────────────────────────────────</span>
+<span class="g2">version: '3.9'
+services:
+  app:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      - DATABASE_URL=postgresql://user:pass@db:5432/mydb
+    depends_on: [db, redis]
+    volumes: [./logs:/app/logs]
+
+  db:
+    image: postgres:15-alpine
+    volumes: [pgdata:/var/lib/postgresql/data]
+    environment:
+      POSTGRES_PASSWORD: securepassword
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  pgdata:</span>
+
+<span class="g1">docker compose up -d</span>            <span class="cm"># Start all services</span>
+<span class="g1">docker compose logs -f app</span>      <span class="cm"># Follow app logs</span>
+<span class="g1">docker compose down -v</span>          <span class="cm"># Stop + remove volumes</span></pre></div>
+    </div>
+  </div>
+  <div class="proj">
+    <div class="proj-glow"></div>
+    <div class="proj-name">🐳 PROJECT 11.A — CONTAINERIZED WEBAPP STACK</div>
+    <div class="proj-desc">Containerize a full web application stack from scratch: write a Dockerfile for a Python/Node app, create a docker-compose.yml with app + PostgreSQL + Redis + Nginx reverse proxy. Secure it, add health checks, and deploy.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot"></div>Multi-stage Dockerfile for Python/Node app</div>
+      <div class="build-item"><div class="build-dot"></div>docker-compose.yml: app + postgres + redis + nginx</div>
+      <div class="build-item"><div class="build-dot"></div>Nginx reverse proxy config as volume mount</div>
+      <div class="build-item"><div class="build-dot"></div>Health checks on all services</div>
+      <div class="build-item"><div class="build-dot"></div>Secrets via environment variables (not baked in)</div>
+      <div class="build-item"><div class="build-dot"></div>Log to stdout, collect with docker logs</div>
+    </div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(10,document.querySelector('[data-phase=\'10\']'))">← PHASE 10</button><button class="nc-btn primary" onclick="go(12,document.querySelector('[data-phase=\'12\']'))">OMEGA SEQUENCE →</button></div>
+</div>
+
+<!-- ════ PHASE 12: OMEGA ════ -->
+<div class="phase-section" id="phase-12">
+  <div class="phase-hdr">
+    <div class="ph-badge" style="background:rgba(255,23,68,0.12);border-color:rgba(255,23,68,0.4)"><div class="ph-badge-num" style="color:var(--red);font-size:20px">Ω</div><div class="ph-badge-lbl" style="color:var(--red)">OMEGA</div></div>
+    <div class="ph-title-wrap">
+      <div class="ph-title" style="color:var(--red2)">OMEGA SEQUENCE</div>
+      <div class="ph-subtitle" style="color:var(--red2)">⚡ FINAL BOSS — MR. ROBOT LEVEL LINUX OPERATION</div>
+      <div class="ph-meta"><span class="meta-tag red">⏱ 3-4 WEEKS</span><span class="meta-tag red">🎭 LEVEL: MR. ROBOT</span></div>
+    </div>
+  </div>
+
+  <div class="omega-banner">
+    <div class="omega-title">🎭 THE OMEGA SEQUENCE</div>
+    <div class="omega-sub">⚡ COMPLETE THIS — AND YOU ARE IN THE TOP 1% OF LINUX USERS ON EARTH ⚡</div>
+    <p style="font-size:12px;color:rgba(255,150,150,.65);margin-top:12px;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.75">This is the final operation. Everything from Phases 1-11 converges into one complete, real-world Linux infrastructure project. This is what separates hobbyists from professionals.</p>
+  </div>
+
+  <div class="proj" style="border-color:rgba(255,23,68,0.4);background:linear-gradient(135deg,rgba(255,23,68,0.04),rgba(150,0,30,0.06))">
+    <div class="proj-name" style="color:var(--red2);font-size:18px">🎭 FINAL OP — FSOC PRODUCTION INFRASTRUCTURE</div>
+    <div class="proj-desc">Build a complete, hardened, automated production Linux server infrastructure from scratch. A real Python/Node web app served over HTTPS, containerized, with automated backups, monitoring alerts, security hardening, and a CI-like deployment pipeline — all on a single Linux server you control.</div>
+    <div class="build-grid">
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Provision fresh Ubuntu 22.04 VPS</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Run bootstrap hardening script (Phase 8+9)</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Deploy Dockerized app stack with Compose</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Nginx + Let's Encrypt SSL (certbot)</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>UFW + fail2ban fully configured</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>auditd tracking sensitive file changes</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Automated daily backups to remote + Telegram alert</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>System health monitoring with threshold alerts</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Git-based deploy.sh with zero-downtime rollout</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Weekly security report generated + emailed</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Lynis hardening score: 85+</div>
+      <div class="build-item"><div class="build-dot" style="background:var(--red);box-shadow:0 0 5px var(--red)"></div>Document everything in a professional runbook</div>
+    </div>
+  </div>
+
+  <div class="gc">
+    <div class="gc-title">AFTER OMEGA — YOUR PATH TO TOP 1%</div>
+    <div class="rm-steps">
+      <div class="rm-step"><div class="rm-circle">A</div><div class="rm-content"><div class="rm-title">Do TryHackMe & HackTheBox</div><div class="rm-body">Apply your Linux skills in real CTF challenges. TryHackMe "Complete Beginner" path → "Jr Penetration Tester". These rooms are built on exactly what you've learned.</div></div></div>
+      <div class="rm-step"><div class="rm-circle">B</div><div class="rm-content"><div class="rm-title">Get a VPS & Host Something Real</div><div class="rm-body">DigitalOcean/Hetzner — $5/month VPS. Deploy your Omega project to a real server on the internet. Own your infrastructure. This is the difference maker.</div></div></div>
+      <div class="rm-step"><div class="rm-circle">C</div><div class="rm-content"><div class="rm-title">Learn Ansible & Terraform</div><div class="rm-body">Automate server provisioning with Ansible playbooks. Define infrastructure as code with Terraform. These are the tools that separate L3 sysadmins from DevOps engineers.</div></div></div>
+      <div class="rm-step"><div class="rm-circle">D</div><div class="rm-content"><div class="rm-title">Kubernetes — The Next Frontier</div><div class="rm-body">After Docker mastery: k3s (lightweight K8s), then full Kubernetes. CKA certification. Container orchestration at scale. This is the $100k+ skill.</div></div></div>
+      <div class="rm-step"><div class="rm-circle">E</div><div class="rm-content"><div class="rm-title">Read Kernel Source & Write Scripts for Fun</div><div class="rm-body">Browse github.com/torvalds/linux. Read /usr/share/doc/. Read the bash source. The top 1% are perpetually curious. Curiosity is the engine.</div></div></div>
+    </div>
+  </div>
+
+  <div class="gc" style="text-align:center;padding:28px">
+    <div style="font-size:44px;margin-bottom:12px">🎭</div>
+    <div style="font-family:'Orbitron',monospace;font-size:17px;color:var(--grn);margin-bottom:8px;text-shadow:var(--glow)">MISSION COMPLETE</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.85;max-width:480px;margin:0 auto">You've reached the end of the F·S·O·C Linux Mastery Protocol. Complete all 12 phases and the Omega project — and you will possess Linux knowledge that puts you in the top 1% of users worldwide. The terminal is your weapon. Use it with purpose.</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--grn);margin-top:16px;letter-spacing:2px">⚡ THE REVOLUTION IS INSIDE THE TERMINAL ⚡</div>
+  </div>
+  <div class="nav-ctrl"><button class="nc-btn" onclick="go(11,document.querySelector('[data-phase=\'11\']'))">← PHASE 11</button><button class="nc-btn primary" onclick="go(0,document.querySelector('[data-phase=\'0\']'))">↺ RESTART PROTOCOL</button></div>
+</div>
+
+  </div><!-- /content -->
+</main>
+</div><!-- /shell -->
+
+<!-- ══════════ SIGNATURE ══════════ -->
+<footer class="sig-footer">
+  <div class="sig-scan"></div>
+  <div class="sig-inner">
+    <div class="sig-arc">
+      <div class="sig-arc-r1"></div><div class="sig-arc-r2"></div><div class="sig-arc-core"></div>
+    </div>
+    <div class="sig-quote">&ldquo;The world is a dangerous place, not because of those who do evil, but because of those who look on and do nothing. Learn Linux. Take control.&rdquo;</div>
+    <div class="sig-div"><div class="sig-div-line"></div><div class="sig-div-dia">◈</div><div class="sig-div-line"></div></div>
+    <div class="sig-built">DESIGNED &amp; BUILT BY</div>
+    <div class="sig-name">Priyanshu_Bal</div>
+    <div class="sig-tagline">Architect of the F·S·O·C Linux Mastery Protocol</div>
+    <div class="sig-bottom">
+      <span>© 2025 Priyanshu_Bal</span><span class="sig-sep">·</span>
+      <span class="sig-stack">Linux · Bash · Docker · Security</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const phaseNames=['HOW TO USE','TERMINAL CORE','FILE SYSTEM','TEXT WARFARE','PROCESS INTEL','NETWORK RECON','SHELL SCRIPTING','USER CONTROL','PACKAGE OPS','SYSTEM HARDENING','AUTO ENGINE','CONTAINER TECH','OMEGA SEQUENCE'];
+const visited=new Set([0]);
+
+function go(n,btn){
+  document.querySelectorAll('.phase-section').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.phase-btn').forEach(b=>{b.classList.remove('active');b.style.background='transparent';b.style.borderLeft='2px solid transparent'});
+  document.getElementById('phase-'+n).classList.add('active');
+  if(btn){
+    btn.classList.add('active');
+    const c=n===12?'#ff1744':'#00ff41';
+    btn.style.background=n===12?'rgba(255,23,68,0.09)':'rgba(0,255,65,0.07)';
+    btn.style.borderLeft='2px solid '+c;
+  }
+  visited.add(n);
+  const pct=Math.round(visited.size/13*100);
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('prog-txt').textContent='MODULE '+(visited.size-1)+' / 12 ACCESSED';
+  const ind=document.getElementById('phase-ind');
+  if(ind) ind.textContent='MODULE '+(n<10?'0'+n:n===12?'Ω':n)+' :: '+(phaseNames[n]||'');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(window.innerWidth<=768) closeSidebar();
+}
+
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('mob-overlay');
+  const btn=document.getElementById('mob-btn');
+  const open=sb.classList.contains('open');
+  sb.classList.toggle('open',!open);
+  ov.classList.toggle('on',!open);
+  btn.classList.toggle('open',!open);
+  document.body.style.overflow=open?'':'hidden';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mob-overlay').classList.remove('on');
+  document.getElementById('mob-btn').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSidebar()});
+window.addEventListener('resize',()=>{if(window.innerWidth>768)closeSidebar()});
+
+// Init first nav btn
+const fb=document.querySelector('[data-phase="0"]');
+if(fb){fb.style.background='rgba(0,255,65,0.07)';fb.style.borderLeft='2px solid #00ff41'}
+
+// Swipe to close sidebar
+let tx=0;
+document.getElementById('sidebar').addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+document.getElementById('sidebar').addEventListener('touchend',e=>{if(tx-e.changedTouches[0].clientX>60)closeSidebar()},{passive:true});
+</script>
+</body>
+</html>
