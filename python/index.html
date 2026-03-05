@@ -1,0 +1,2127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>JARVIS :: Python Mastery Protocol</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --cyan: #00d4ff;
+  --cyan2: #00ffea;
+  --gold: #ffd700;
+  --red: #ff1744;
+  --orange: #ff6b35;
+  --bg: #020912;
+  --bg2: #050f1e;
+  --glass: rgba(0,212,255,0.04);
+  --glass2: rgba(0,212,255,0.08);
+  --border: rgba(0,212,255,0.2);
+  --border2: rgba(0,212,255,0.4);
+  --text: #c8e6f0;
+  --text2: rgba(200,230,240,0.55);
+  --glow: 0 0 20px rgba(0,212,255,0.3);
+  --glow2: 0 0 40px rgba(0,212,255,0.5);
+}
+*{box-sizing:border-box;margin:0;padding:0;scrollbar-width:thin;scrollbar-color:var(--cyan) var(--bg)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--cyan);border-radius:2px}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;cursor:crosshair}
+
+/* ── ANIMATED BG ── */
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 80% 60% at 50% -20%,rgba(0,100,180,0.15),transparent),
+  radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,50,100,0.1),transparent),
+  repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(0,212,255,0.015) 60px,rgba(0,212,255,0.015) 61px),
+  repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(0,212,255,0.015) 60px,rgba(0,212,255,0.015) 61px);
+  pointer-events:none;z-index:0}
+
+/* ── SCAN LINE ── */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:1;opacity:0.4}
+
+/* ── LAYOUT ── */
+.shell{position:relative;z-index:2;display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:280px;flex-shrink:0;background:rgba(2,9,18,0.95);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;overflow-x:hidden;z-index:100;backdrop-filter:blur(20px)}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
+.jarvis-logo{font-family:'Orbitron',monospace;font-size:11px;font-weight:900;letter-spacing:4px;color:var(--cyan);text-shadow:var(--glow);margin-bottom:4px}
+.jarvis-sub{font-size:10px;color:var(--text2);letter-spacing:2px;font-family:'Share Tech Mono',monospace}
+
+/* Arc reactor mini */
+.arc-mini{width:36px;height:36px;margin:12px auto 8px;position:relative}
+.arc-mini::before,.arc-mini::after{content:'';position:absolute;inset:0;border-radius:50%}
+.arc-mini::before{background:radial-gradient(circle,rgba(0,212,255,0.9) 20%,rgba(0,100,255,0.4) 50%,transparent 70%);animation:pulse-arc 2s ease-in-out infinite}
+.arc-mini::after{border:1px solid rgba(0,212,255,0.5);animation:rotate-arc 3s linear infinite}
+@keyframes pulse-arc{0%,100%{transform:scale(1);opacity:0.8}50%{transform:scale(1.1);opacity:1}}
+@keyframes rotate-arc{to{transform:rotate(360deg)}}
+
+.phase-nav{padding:10px 12px}
+.phase-btn{width:100%;display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;border:none;background:transparent;border-left:2px solid transparent;cursor:pointer;text-align:left;transition:all 0.2s;margin-bottom:2px;color:var(--text2)}
+.phase-btn:hover{background:var(--glass);color:var(--text);border-left-color:var(--cyan)}
+.phase-btn.active{background:var(--glass2);color:var(--cyan);border-left-color:var(--cyan);box-shadow:inset 0 0 20px rgba(0,212,255,0.05)}
+.phase-num{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;width:22px;height:22px;border-radius:4px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--cyan)}
+.phase-btn.active .phase-num{background:rgba(0,212,255,0.2);border-color:var(--cyan);box-shadow:0 0 8px rgba(0,212,255,0.3)}
+.phase-label{font-size:11px;font-weight:600;letter-spacing:0.5px;line-height:1.3;font-family:'Orbitron',monospace}
+.phase-sub{font-size:9px;color:var(--text2);margin-top:1px;font-family:'Share Tech Mono',monospace}
+
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);margin-top:auto}
+.progress-label{font-size:9px;color:var(--text2);letter-spacing:2px;font-family:'Orbitron',monospace;margin-bottom:8px}
+.progress-bar-wrap{height:3px;background:rgba(0,212,255,0.1);border-radius:2px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--cyan2));border-radius:2px;width:0%;transition:width 0.5s ease;box-shadow:0 0 8px var(--cyan)}
+
+/* ── MAIN CONTENT ── */
+.main{margin-left:280px;flex:1;min-height:100vh}
+
+/* ── HUD HEADER ── */
+.hud-header{position:sticky;top:0;z-index:50;background:rgba(2,9,18,0.92);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);padding:12px 32px;display:flex;align-items:center;gap:20px}
+.hud-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;letter-spacing:3px;color:var(--cyan);text-shadow:var(--glow)}
+.hud-status{margin-left:auto;display:flex;gap:16px;align-items:center}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:blink 1.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.status-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:1px}
+
+/* ── HERO SECTION ── */
+.hero{padding:60px 40px 40px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(0,100,200,0.08),transparent);pointer-events:none}
+
+/* Arc Reactor Main */
+.arc-reactor{width:120px;height:120px;margin:0 auto 32px;position:relative}
+.arc-outer{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(0,212,255,0.3);animation:spin1 8s linear infinite}
+.arc-outer::before{content:'';position:absolute;top:-3px;left:50%;width:6px;height:6px;background:var(--cyan);border-radius:50%;box-shadow:0 0 10px var(--cyan);transform:translateX(-50%)}
+.arc-mid{position:absolute;inset:12px;border-radius:50%;border:1px solid rgba(0,212,255,0.5);animation:spin1 5s linear infinite reverse}
+.arc-mid::before,.arc-mid::after{content:'';position:absolute;width:4px;height:4px;background:var(--cyan);border-radius:50%;box-shadow:0 0 8px var(--cyan)}
+.arc-mid::before{top:-2px;left:50%;transform:translateX(-50%)}
+.arc-mid::after{bottom:-2px;left:50%;transform:translateX(-50%)}
+.arc-inner{position:absolute;inset:24px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,0.95) 10%,rgba(0,150,255,0.7) 40%,rgba(0,50,150,0.3) 70%,transparent);box-shadow:0 0 30px rgba(0,212,255,0.8),0 0 60px rgba(0,100,255,0.4),inset 0 0 20px rgba(255,255,255,0.2);animation:pulse-main 2s ease-in-out infinite}
+.arc-hex{position:absolute;inset:32px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);background:rgba(0,212,255,0.15);border:1px solid rgba(0,212,255,0.3)}
+@keyframes spin1{to{transform:rotate(360deg)}}
+@keyframes pulse-main{0%,100%{box-shadow:0 0 30px rgba(0,212,255,0.8),0 0 60px rgba(0,100,255,0.4)}50%{box-shadow:0 0 50px rgba(0,212,255,1),0 0 100px rgba(0,150,255,0.6)}}
+
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--cyan);margin-bottom:16px;opacity:0.8}
+.hero-title{font-family:'Orbitron',monospace;font-size:clamp(22px,4vw,42px);font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:16px}
+.hero-title span.c{color:var(--cyan);text-shadow:0 0 30px rgba(0,212,255,0.5)}
+.hero-title span.g{color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,0.4)}
+.hero-desc{font-size:14px;color:var(--text2);max-width:600px;margin:0 auto 32px;line-height:1.7;font-weight:300}
+
+.hero-stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+.stat{text-align:center;padding:16px 24px;background:var(--glass);border:1px solid var(--border);border-radius:8px;position:relative;overflow:hidden}
+.stat::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,0.03),transparent);pointer-events:none}
+.stat-val{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:var(--cyan);text-shadow:var(--glow);line-height:1}
+.stat-label{font-size:10px;color:var(--text2);letter-spacing:2px;margin-top:4px;font-family:'Share Tech Mono',monospace}
+
+/* HUD corners */
+.hud-corners{position:relative}
+.hud-corners::before,.hud-corners::after{content:'';position:absolute;width:12px;height:12px;border-color:var(--cyan);border-style:solid;opacity:0.6}
+.hud-corners::before{top:0;left:0;border-width:1px 0 0 1px}
+.hud-corners::after{top:0;right:0;border-width:1px 1px 0 0}
+
+/* ── CONTENT AREA ── */
+.content-area{padding:0 32px 60px}
+.phase-section{display:none}
+.phase-section.active{display:block}
+
+/* ── PHASE HEADER ── */
+.phase-header{padding:32px 0 24px;display:flex;align-items:flex-start;gap:20px}
+.phase-badge{width:64px;height:64px;flex-shrink:0;border-radius:12px;background:var(--glass2);border:1px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;overflow:hidden}
+.phase-badge::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,212,255,0.1),transparent)}
+.phase-badge-num{font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--cyan);text-shadow:var(--glow);line-height:1}
+.phase-badge-label{font-size:8px;color:var(--cyan);letter-spacing:1px;font-family:'Share Tech Mono',monospace}
+.phase-title-wrap{}
+.phase-title{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:#fff;letter-spacing:1px;margin-bottom:4px}
+.phase-subtitle{font-size:12px;color:var(--cyan);letter-spacing:2px;font-family:'Share Tech Mono',monospace;margin-bottom:8px}
+.phase-meta{display:flex;gap:12px;flex-wrap:wrap}
+.meta-tag{font-size:10px;padding:3px 10px;border-radius:4px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);color:var(--text2);font-family:'Share Tech Mono',monospace}
+.meta-tag.gold{background:rgba(255,215,0,0.08);border-color:rgba(255,215,0,0.3);color:var(--gold)}
+.meta-tag.red{background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.3);color:#ff6b8a}
+
+/* ── GLASS CARD ── */
+.glass-card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden;transition:border-color 0.3s,box-shadow 0.3s}
+.glass-card:hover{border-color:var(--border2);box-shadow:var(--glow)}
+.glass-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.5}
+
+.card-title{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:3px;height:14px;background:var(--cyan);border-radius:1px;box-shadow:0 0 8px var(--cyan)}
+
+/* ── CONCEPT GRID ── */
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:4px}
+.concept-item{background:rgba(0,0,0,0.3);border:1px solid rgba(0,212,255,0.12);border-radius:8px;padding:12px 14px;transition:all 0.2s;cursor:default}
+.concept-item:hover{border-color:rgba(0,212,255,0.3);background:rgba(0,212,255,0.04);transform:translateY(-1px)}
+.concept-icon{font-size:18px;margin-bottom:6px}
+.concept-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:3px}
+.concept-desc{font-size:11px;color:var(--text2);line-height:1.4}
+
+/* ── PROJECT SHOWCASE ── */
+.project-showcase{background:linear-gradient(135deg,rgba(0,212,255,0.05),rgba(0,50,150,0.08));border:1px solid rgba(0,212,255,0.3);border-radius:12px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.project-showcase::after{content:'PROJECT';position:absolute;top:12px;right:16px;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:rgba(0,212,255,0.3);font-weight:700}
+.project-glow{position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(0,212,255,0.08),transparent);pointer-events:none}
+.project-name{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,0.3);margin-bottom:4px}
+.project-desc{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px}
+.what-you-build{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.build-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)}
+.build-dot{width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan);flex-shrink:0}
+
+/* ── CODE BLOCK ── */
+.code-wrap{margin:16px 0;border-radius:10px;overflow:hidden;border:1px solid rgba(0,212,255,0.15)}
+.code-header{background:rgba(0,0,0,0.5);padding:8px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(0,212,255,0.1)}
+.code-dots{display:flex;gap:5px}
+.code-dot{width:10px;height:10px;border-radius:50%}
+.code-dot.r{background:#ff5f56}.code-dot.y{background:#ffbd2e}.code-dot.g{background:#27c93f}
+.code-lang{margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,212,255,0.5);letter-spacing:2px}
+.code-body{background:#020c18;padding:18px 20px;overflow-x:auto}
+pre{font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.8;color:#e0f4ff;white-space:pre}
+.kw{color:#ff79c6}.fn{color:#50fa7b}.st{color:#f1fa8c}.cm{color:#6272a4;font-style:italic}.num{color:#bd93f9}.op{color:#ff79c6}.cls{color:#8be9fd}.dec{color:var(--cyan)}
+
+/* ── TOPIC TAGS ── */
+.topic-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.topic-tag{font-size:10px;padding:3px 10px;border-radius:20px;border:1px solid;font-family:'Share Tech Mono',monospace;letter-spacing:0.5px}
+.tt-cyan{background:rgba(0,212,255,0.08);border-color:rgba(0,212,255,0.25);color:var(--cyan)}
+.tt-gold{background:rgba(255,215,0,0.08);border-color:rgba(255,215,0,0.25);color:var(--gold)}
+.tt-red{background:rgba(255,23,68,0.08);border-color:rgba(255,23,68,0.25);color:#ff6b8a}
+.tt-green{background:rgba(0,255,100,0.08);border-color:rgba(0,255,100,0.25);color:#69ff9b}
+
+/* ── TIPS BOX ── */
+.jarvis-tip{background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.2);border-radius:8px;padding:14px 16px;margin:12px 0;display:flex;gap:12px;align-items:flex-start}
+.tip-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.tip-text{font-size:12px;color:rgba(255,215,0,0.9);line-height:1.6;font-family:'Share Tech Mono',monospace}
+
+/* ── ROADMAP ── */
+.roadmap-steps{display:flex;flex-direction:column;gap:0}
+.roadmap-step{display:flex;gap:16px;align-items:flex-start;position:relative}
+.roadmap-step::before{content:'';position:absolute;left:15px;top:32px;bottom:-10px;width:1px;background:rgba(0,212,255,0.2)}
+.roadmap-step:last-child::before{display:none}
+.step-circle{width:32px;height:32px;border-radius:50%;background:rgba(0,212,255,0.1);border:2px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--cyan);flex-shrink:0;box-shadow:0 0 12px rgba(0,212,255,0.2)}
+.step-content{padding:4px 0 24px;flex:1}
+.step-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px}
+.step-body{font-size:12px;color:var(--text2);line-height:1.6}
+
+/* ── WARNING / INFO BOXES ── */
+.info-box{border-radius:8px;padding:14px 16px;margin:12px 0;font-size:12px;line-height:1.6;display:flex;gap:10px;align-items:flex-start}
+.info-box.cyan{background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);color:rgba(150,230,255,0.9)}
+.info-box.orange{background:rgba(255,107,53,0.05);border:1px solid rgba(255,107,53,0.2);color:rgba(255,180,130,0.9)}
+
+/* ── EXERCISE CARD ── */
+.exercise-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.exercise-card{background:rgba(0,0,0,0.4);border:1px solid rgba(0,212,255,0.12);border-radius:10px;padding:16px;transition:all 0.2s}
+.exercise-card:hover{border-color:rgba(0,212,255,0.3);box-shadow:0 4px 20px rgba(0,212,255,0.08)}
+.ex-level{font-size:9px;letter-spacing:2px;margin-bottom:8px;font-family:'Orbitron',monospace;font-weight:700}
+.ex-level.easy{color:#69ff9b}.ex-level.med{color:var(--gold)}.ex-level.hard{color:#ff6b8a}
+.ex-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:6px}
+.ex-desc{font-size:11px;color:var(--text2);line-height:1.5}
+
+/* ── HOW TO USE ── */
+.how-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.how-card{background:var(--glass);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;position:relative;overflow:hidden}
+.how-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.how-num{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:rgba(0,212,255,0.15);line-height:1;margin-bottom:8px}
+.how-icon{font-size:28px;margin-bottom:10px}
+.how-title{font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:6px;font-family:'Orbitron',monospace;font-size:11px;letter-spacing:1px}
+.how-body{font-size:11px;color:var(--text2);line-height:1.6}
+
+/* ── DIVIDER ── */
+.hud-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:24px 0;position:relative}
+.hud-divider::before{content:'◆';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:8px;color:var(--cyan);background:var(--bg);padding:0 8px}
+
+/* ── LEVEL BADGE ── */
+.level-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:4px;font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:2px}
+.lb-init{background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);color:var(--cyan)}
+.lb-core{background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);color:var(--gold)}
+.lb-adv{background:rgba(255,23,68,0.1);border:1px solid rgba(255,23,68,0.3);color:#ff6b8a}
+.lb-elite{background:rgba(160,32,240,0.1);border:1px solid rgba(160,32,240,0.3);color:#c88aff}
+
+/* ── TWO COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* ═══════════════════════════════════════════════════════
+   FULL RESPONSIVE SYSTEM — ALL SCREEN SIZES
+   ═══════════════════════════════════════════════════════ */
+
+/* ── HAMBURGER BUTTON (hidden on desktop) ── */
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:38px;height:38px;background:var(--glass2);border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0;transition:all .2s;margin-right:4px}
+.mob-menu-btn:hover{border-color:var(--border2);box-shadow:var(--glow)}
+.mob-menu-btn span{display:block;width:18px;height:1.5px;background:var(--cyan);border-radius:1px;transition:all .3s;box-shadow:0 0 4px var(--cyan)}
+.mob-menu-btn span+span{margin-top:4px}
+.mob-menu-btn.open span:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+.mob-menu-btn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.mob-menu-btn.open span:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+
+/* ── OVERLAY BACKDROP ── */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99;backdrop-filter:blur(4px)}
+.sidebar-overlay.visible{display:block}
+
+/* ── TABLET: 768px–1024px ── */
+@media(max-width:1024px){
+  .sidebar{width:240px}
+  .main{margin-left:240px}
+  .hud-header{padding:10px 20px;gap:12px}
+  .hud-title{font-size:11px;letter-spacing:2px}
+  .content-area{padding:0 20px 60px}
+  .hero{padding:40px 20px 32px}
+  .phase-title{font-size:18px}
+  .two-col{grid-template-columns:1fr 1fr;gap:12px}
+  .concept-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .how-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .exercise-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+}
+
+/* ── MOBILE: max 768px ── */
+@media(max-width:768px){
+
+  /* Layout: sidebar becomes slide-in overlay */
+  .shell{display:block}
+  .main{margin-left:0;min-height:100vh}
+
+  /* Sidebar: off-canvas, slides in from left */
+  .sidebar{
+    position:fixed;top:0;left:0;
+    width:280px;max-width:85vw;
+    height:100vh;
+    transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+    z-index:200;
+    border-right:1px solid var(--border2);
+    box-shadow:4px 0 40px rgba(0,0,0,.8);
+  }
+  .sidebar.open{transform:translateX(0)}
+
+  /* Show hamburger */
+  .mob-menu-btn{display:flex}
+
+  /* HUD header: stack items, show hamburger */
+  .hud-header{
+    padding:10px 14px;
+    gap:8px;
+    flex-wrap:nowrap;
+    position:sticky;top:0;z-index:150;
+  }
+  .hud-title{font-size:10px;letter-spacing:1.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+  #phase-indicator{display:none}
+  .hud-status{gap:8px}
+  .status-text:last-child,.hud-status div:nth-child(3){display:none}
+  .status-text{font-size:9px;letter-spacing:.5px}
+
+  /* Content area */
+  .content-area{padding:0 14px 60px}
+
+  /* Hero */
+  .hero{padding:28px 16px 24px}
+  .arc-reactor{width:90px;height:90px;margin:0 auto 20px}
+  .hero-eyebrow{font-size:9px;letter-spacing:2px}
+  .hero-desc{font-size:13px;margin-bottom:20px}
+  .hero-stats{gap:8px;justify-content:center}
+  .stat{padding:10px 14px}
+  .stat-val{font-size:22px}
+  .stat-label{font-size:9px}
+
+  /* Phase header */
+  .phase-header{padding:20px 0 16px;gap:12px;align-items:flex-start}
+  .phase-badge{width:48px;height:48px;border-radius:8px}
+  .phase-badge-num{font-size:14px}
+  .phase-title{font-size:16px;letter-spacing:.5px}
+  .phase-subtitle{font-size:10px;letter-spacing:1px;line-height:1.5}
+  .phase-meta{gap:6px}
+  .meta-tag{font-size:9px;padding:2px 7px}
+
+  /* Glass cards */
+  .glass-card{padding:16px 14px;margin-bottom:14px}
+  .card-title{font-size:11px;letter-spacing:1.5px;margin-bottom:12px}
+
+  /* Grids → single column on mobile */
+  .two-col{grid-template-columns:1fr;gap:12px}
+  .concept-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .how-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .exercise-grid{grid-template-columns:1fr;gap:10px}
+  .what-you-build{grid-template-columns:1fr}
+
+  /* Concept items */
+  .concept-item{padding:10px 12px}
+  .concept-icon{font-size:16px;margin-bottom:4px}
+  .concept-name{font-size:11px}
+  .concept-desc{font-size:10px}
+
+  /* How cards */
+  .how-card{padding:14px 12px}
+  .how-num{font-size:22px}
+  .how-icon{font-size:22px;margin-bottom:8px}
+  .how-body{font-size:10px}
+
+  /* Project showcase */
+  .project-showcase{padding:16px 14px}
+  .project-name{font-size:13px}
+  .project-desc{font-size:12px;margin-bottom:12px}
+  .build-item{font-size:11px}
+
+  /* Code blocks — horizontal scroll, smaller font */
+  .code-body{padding:12px 14px}
+  pre{font-size:10px;line-height:1.7}
+  .code-header{padding:7px 12px}
+  .code-lang{font-size:8px}
+
+  /* Tips */
+  .jarvis-tip{padding:12px 12px;gap:8px}
+  .tip-text{font-size:11px}
+
+  /* Roadmap steps */
+  .roadmap-step{gap:12px}
+  .step-circle{width:28px;height:28px;font-size:9px}
+  .step-content{padding:2px 0 18px}
+  .step-title{font-size:12px}
+  .step-body{font-size:11px}
+
+  /* Omega banner */
+  .omega-banner{padding:20px 16px}
+  .omega-title{font-size:18px}
+
+  /* Nav controls */
+  .nav-controls{flex-direction:column;gap:8px;padding:16px 0 40px;align-items:stretch}
+  .nav-btn-ctrl{padding:12px 16px;font-size:10px;text-align:center;letter-spacing:1px}
+
+  /* Info boxes */
+  .info-box{font-size:11px;padding:12px 12px}
+
+  /* Exercise cards */
+  .exercise-card{padding:14px 12px}
+
+  /* Scroll tables */
+  table{font-size:11px}
+}
+
+/* ── SMALL MOBILE: max 420px ── */
+@media(max-width:420px){
+  .concept-grid{grid-template-columns:1fr}
+  .how-grid{grid-template-columns:1fr}
+  .hero-stats{gap:6px}
+  .stat{padding:8px 12px}
+  .stat-val{font-size:20px}
+  .hud-title{font-size:9px;max-width:110px}
+  .phase-title{font-size:14px}
+  pre{font-size:9.5px}
+  .hero{padding:20px 12px 20px}
+  .content-area{padding:0 10px 60px}
+}
+
+/* ── OMEGA / FINAL SECTION ── */
+.omega-banner{background:linear-gradient(135deg,rgba(255,23,68,0.06),rgba(255,107,53,0.08));border:1px solid rgba(255,23,68,0.3);border-radius:12px;padding:28px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden}
+.omega-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,50,50,0.08),transparent 60%);pointer-events:none}
+.omega-title{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--red);text-shadow:0 0 30px rgba(255,23,68,0.5);margin-bottom:8px}
+.omega-sub{font-size:12px;color:rgba(255,150,150,0.7);letter-spacing:2px;font-family:'Share Tech Mono',monospace}
+
+/* ── NAV BUTTONS ── */
+.nav-controls{display:flex;gap:12px;padding:20px 0 40px;justify-content:center}
+.nav-btn-ctrl{padding:10px 24px;border-radius:6px;border:1px solid var(--border);background:var(--glass);color:var(--cyan);font-family:'Orbitron',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;transition:all 0.2s}
+.nav-btn-ctrl:hover{background:var(--glass2);border-color:var(--border2);box-shadow:var(--glow)}
+.nav-btn-ctrl.primary{background:rgba(0,212,255,0.12);border-color:var(--cyan)}
+
+/* Animations */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.phase-section.active .glass-card,.phase-section.active .project-showcase{animation:fadeInUp 0.4s ease both}
+.phase-section.active .glass-card:nth-child(2){animation-delay:0.05s}
+.phase-section.active .glass-card:nth-child(3){animation-delay:0.1s}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══════════════════════════════ SIDEBAR ═══════════════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="arc-mini"></div>
+      <div>
+        <div class="jarvis-logo">J.A.R.V.I.S</div>
+        <div class="jarvis-sub">PYTHON PROTOCOL v3.0</div>
+      </div>
+    </div>
+  </div>
+  <div class="phase-nav">
+    <div style="font-size:9px;color:var(--text2);letter-spacing:2px;font-family:'Orbitron',monospace;padding:10px 4px 6px">MISSION MODULES</div>
+    <button class="phase-btn active" data-phase="0" onclick="showPhase(0,this)">
+      <span class="phase-num">00</span>
+      <div><div class="phase-label">HOW TO USE</div><div class="phase-sub">Start here first</div></div>
+    </button>
+    <button class="phase-btn" data-phase="1" onclick="showPhase(1,this)">
+      <span class="phase-num">01</span>
+      <div><div class="phase-label">CORE SYSTEMS</div><div class="phase-sub">Python Fundamentals</div></div>
+    </button>
+    <button class="phase-btn" data-phase="2" onclick="showPhase(2,this)">
+      <span class="phase-num">02</span>
+      <div><div class="phase-label">LOGIC GATES</div><div class="phase-sub">Control Flow</div></div>
+    </button>
+    <button class="phase-btn" data-phase="3" onclick="showPhase(3,this)">
+      <span class="phase-num">03</span>
+      <div><div class="phase-label">SUBROUTINES</div><div class="phase-sub">Functions & Modules</div></div>
+    </button>
+    <button class="phase-btn" data-phase="4" onclick="showPhase(4,this)">
+      <span class="phase-num">04</span>
+      <div><div class="phase-label">DATA MATRICES</div><div class="phase-sub">Data Structures</div></div>
+    </button>
+    <button class="phase-btn" data-phase="5" onclick="showPhase(5,this)">
+      <span class="phase-num">05</span>
+      <div><div class="phase-label">OBJECT PROTOCOL</div><div class="phase-sub">OOP Mastery</div></div>
+    </button>
+    <button class="phase-btn" data-phase="6" onclick="showPhase(6,this)">
+      <span class="phase-num">06</span>
+      <div><div class="phase-label">FILE INTERFACE</div><div class="phase-sub">I/O & Exceptions</div></div>
+    </button>
+    <button class="phase-btn" data-phase="7" onclick="showPhase(7,this)">
+      <span class="phase-num">07</span>
+      <div><div class="phase-label">NETWORK UPLINK</div><div class="phase-sub">APIs & HTTP</div></div>
+    </button>
+    <button class="phase-btn" data-phase="8" onclick="showPhase(8,this)">
+      <span class="phase-num">08</span>
+      <div><div class="phase-label">DATA CORE</div><div class="phase-sub">Databases</div></div>
+    </button>
+    <button class="phase-btn" data-phase="9" onclick="showPhase(9,this)">
+      <span class="phase-num">09</span>
+      <div><div class="phase-label">NEURAL ANALYTICS</div><div class="phase-sub">Data Science</div></div>
+    </button>
+    <button class="phase-btn" data-phase="10" onclick="showPhase(10,this)">
+      <span class="phase-num">10</span>
+      <div><div class="phase-label">AUTO SYSTEMS</div><div class="phase-sub">Automation & Scraping</div></div>
+    </button>
+    <button class="phase-btn" data-phase="11" onclick="showPhase(11,this)">
+      <span class="phase-num">11</span>
+      <div><div class="phase-label">ADV PROTOCOLS</div><div class="phase-sub">Advanced Python</div></div>
+    </button>
+    <button class="phase-btn" data-phase="12" onclick="showPhase(12,this)">
+      <span class="phase-num">Ω</span>
+      <div><div class="phase-label">OMEGA SEQUENCE</div><div class="phase-sub">Final Boss Project</div></div>
+    </button>
+  </div>
+  <div class="sidebar-footer">
+    <div class="progress-label">MISSION PROGRESS</div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="prog-bar"></div></div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text2);margin-top:6px" id="prog-text">MODULE 0 / 12 COMPLETE</div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+<main class="main">
+  <div class="hud-header">
+    <button class="mob-menu-btn" id="mob-menu-btn" aria-label="Open navigation" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="hud-title">PYTHON MASTERY PROTOCOL</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2)" id="phase-indicator">PHASE 00 :: HOW TO USE</div>
+    <div class="hud-status">
+      <div class="status-dot"></div>
+      <div class="status-text">SYSTEM ONLINE</div>
+      <div style="width:1px;height:16px;background:var(--border)"></div>
+      <div class="status-text">TOP 1% MODE</div>
+    </div>
+  </div>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <div class="content-area">
+
+    <!-- ════ PHASE 0: HOW TO USE ════ -->
+    <div class="phase-section active" id="phase-0">
+      <div class="hero">
+        <div class="arc-reactor">
+          <div class="arc-outer"></div>
+          <div class="arc-mid"></div>
+          <div class="arc-inner"></div>
+          <div class="arc-hex"></div>
+        </div>
+        <div class="hero-eyebrow">⚡ INITIALIZING PYTHON MASTERY PROTOCOL ⚡</div>
+        <h1 class="hero-title">
+          From <span class="c">Zero</span> to <span class="g">Top 1%</span><br>Python Programmer
+        </h1>
+        <p class="hero-desc">No tutorial hell. No passive watching. Pure hands-on project-based learning that builds real Python mastery from the ground up — the way elite engineers actually learn.</p>
+        <div class="hero-stats">
+          <div class="stat"><div class="stat-val">12</div><div class="stat-label">PHASES</div></div>
+          <div class="stat"><div class="stat-val">25+</div><div class="stat-label">REAL PROJECTS</div></div>
+          <div class="stat"><div class="stat-val">100%</div><div class="stat-label">COVERAGE</div></div>
+          <div class="stat"><div class="stat-val">0</div><div class="stat-label">TUTORIALS</div></div>
+        </div>
+      </div>
+
+      <div class="hud-divider"></div>
+
+      <div class="glass-card">
+        <div class="card-title">HOW TO USE THIS GUIDE</div>
+        <div class="how-grid">
+          <div class="how-card">
+            <div class="how-num">01</div>
+            <div class="how-icon">⚙️</div>
+            <div class="how-title">SETUP FIRST</div>
+            <div class="how-body">Install Python 3.12+ and VS Code. Use the terminal. Never use online editors — real engineers use real tools from day one.</div>
+          </div>
+          <div class="how-card">
+            <div class="how-num">02</div>
+            <div class="how-icon">📖</div>
+            <div class="how-title">READ THE CONCEPTS</div>
+            <div class="how-body">Each phase starts with core concepts. Read them first. Understand the "why" before the "how". Take 30 minutes per concept block.</div>
+          </div>
+          <div class="how-card">
+            <div class="how-num">03</div>
+            <div class="how-icon">💻</div>
+            <div class="how-title">TYPE THE CODE</div>
+            <div class="how-body">Never copy-paste code examples. TYPE every single line manually. Your muscle memory and comprehension depend on it.</div>
+          </div>
+          <div class="how-card">
+            <div class="how-num">04</div>
+            <div class="how-icon">🚀</div>
+            <div class="how-title">BUILD THE PROJECT</div>
+            <div class="how-body">Each phase has a capstone project. Build it from scratch using only the concepts learned. Google is allowed — Stack Overflow is your friend.</div>
+          </div>
+          <div class="how-card">
+            <div class="how-num">05</div>
+            <div class="how-icon">🔥</div>
+            <div class="how-title">EXTEND IT</div>
+            <div class="how-body">After finishing each project, add 2-3 extra features you invent yourself. This is where real learning happens. Push to GitHub every time.</div>
+          </div>
+          <div class="how-card">
+            <div class="how-num">06</div>
+            <div class="how-icon">⚡</div>
+            <div class="how-title">NEVER SKIP PHASES</div>
+            <div class="how-body">Each phase builds on the last. If you're stuck, re-read and re-build. Struggling is the learning. Comfort is the enemy of growth.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-title">ENVIRONMENT SETUP</div>
+        <div class="two-col">
+          <div>
+            <div class="roadmap-steps">
+              <div class="roadmap-step">
+                <div class="step-circle">1</div>
+                <div class="step-content">
+                  <div class="step-title">Install Python 3.12+</div>
+                  <div class="step-body">Download from python.org. During install, CHECK "Add Python to PATH". Verify: open terminal, type <code style="color:var(--cyan)">python --version</code></div>
+                </div>
+              </div>
+              <div class="roadmap-step">
+                <div class="step-circle">2</div>
+                <div class="step-content">
+                  <div class="step-title">Install VS Code</div>
+                  <div class="step-body">code.visualstudio.com. Install extensions: Python (Microsoft), Pylance, Python Indent, Material Theme, GitLens.</div>
+                </div>
+              </div>
+              <div class="roadmap-step">
+                <div class="step-circle">3</div>
+                <div class="step-content">
+                  <div class="step-title">Install Git + GitHub</div>
+                  <div class="step-body">git-scm.com + create github.com account. Every project goes into its own GitHub repo. Your portfolio starts now.</div>
+                </div>
+              </div>
+              <div class="roadmap-step">
+                <div class="step-circle">4</div>
+                <div class="step-content">
+                  <div class="step-title">Learn the Terminal</div>
+                  <div class="step-body">cd, ls/dir, mkdir, python file.py — these 4 commands are 90% of what you need. Practice them daily.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="code-wrap">
+              <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">TERMINAL</div></div>
+              <div class="code-body"><pre><span class="cm"># Verify Python installed correctly</span>
+python --version
+<span class="cm"># Python 3.12.x</span>
+
+<span class="cm"># Verify pip (package manager)</span>
+pip --version
+
+<span class="cm"># Create your first project folder</span>
+mkdir python-mastery
+cd python-mastery
+
+<span class="cm"># Create virtual environment (do this per project)</span>
+python -m venv venv
+
+<span class="cm"># Activate it (Windows)</span>
+venv\Scripts\activate
+
+<span class="cm"># Activate it (Mac/Linux)</span>
+source venv/bin/activate
+
+<span class="cm"># You'll see (venv) in your terminal ✓</span></pre></div>
+            </div>
+          </div>
+        </div>
+        <div class="jarvis-tip">
+          <div class="tip-icon">⚡</div>
+          <div class="tip-text">JARVIS TIP: The single biggest mistake beginners make is spending weeks on tutorials. Studies show project-based learners become job-ready 3x faster. Trust the process — every phase here was designed by analyzing what top 1% Python engineers actually know.</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-title">YOUR LEARNING SCHEDULE</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">🎯</div><div class="concept-name">Daily: 2-3 Hours</div><div class="concept-desc">Consistency beats intensity. 2 focused hours daily beats 10 hours on weekends.</div></div>
+          <div class="concept-item"><div class="concept-icon">📅</div><div class="concept-name">Per Phase: 1-2 Weeks</div><div class="concept-desc">Don't rush. Deep understanding of Phase 3 beats shallow knowledge of Phase 9.</div></div>
+          <div class="concept-item"><div class="concept-icon">🐙</div><div class="concept-name">GitHub: Every Day</div><div class="concept-desc">Commit code every single day. Your green commit graph is your real resume.</div></div>
+          <div class="concept-item"><div class="concept-icon">🧠</div><div class="concept-name">Review: Weekly</div><div class="concept-desc">Every Sunday, rebuild the week's project from memory without looking at notes.</div></div>
+          <div class="concept-item"><div class="concept-icon">🏆</div><div class="concept-name">Total Duration: 3-6 Months</div><div class="concept-desc">3 months intense or 6 months balanced. Both lead to the top 1% if done right.</div></div>
+          <div class="concept-item"><div class="concept-icon">🚫</div><div class="concept-name">No Tutorial Hell</div><div class="concept-desc">If you feel the urge to watch a tutorial instead of coding — open this guide instead.</div></div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl primary" onclick="showPhase(1,document.querySelector('[data-phase=\'1\']'))">⚡ BEGIN PHASE 01 — CORE SYSTEMS →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 1: CORE SYSTEMS ════ -->
+    <div class="phase-section" id="phase-1">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">01</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">CORE SYSTEMS</div>
+          <div class="phase-subtitle">⚡ PYTHON FUNDAMENTALS — VARIABLES, TYPES, STRINGS, INPUT/OUTPUT</div>
+          <div class="phase-meta">
+            <span class="meta-tag">⏱ 1 WEEK</span>
+            <span class="meta-tag gold">🎯 LEVEL: INITIATE</span>
+            <span class="meta-tag">📦 NO LIBRARIES NEEDED</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-title">CONCEPTS YOU WILL MASTER</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">📦</div><div class="concept-name">Variables & Assignment</div><div class="concept-desc">Storing data: name = "Tony", age = 43, pi = 3.14</div></div>
+          <div class="concept-item"><div class="concept-icon">🔢</div><div class="concept-name">Data Types</div><div class="concept-desc">int, float, str, bool, None — Python's building blocks</div></div>
+          <div class="concept-item"><div class="concept-icon">➕</div><div class="concept-name">Operators</div><div class="concept-desc">Arithmetic, comparison, logical, assignment operators</div></div>
+          <div class="concept-item"><div class="concept-icon">📝</div><div class="concept-name">Strings Mastery</div><div class="concept-desc">Slicing, formatting, f-strings, methods: .upper(), .split()</div></div>
+          <div class="concept-item"><div class="concept-icon">⌨️</div><div class="concept-name">Input / Output</div><div class="concept-desc">input(), print(), type casting: int("42")</div></div>
+          <div class="concept-item"><div class="concept-icon">🔍</div><div class="concept-name">Type System</div><div class="concept-desc">type(), isinstance(), dynamic vs static typing explained</div></div>
+          <div class="concept-item"><div class="concept-icon">🧮</div><div class="concept-name">Math Operations</div><div class="concept-desc">** power, // floor div, % modulo — beyond basic arithmetic</div></div>
+          <div class="concept-item"><div class="concept-icon">📋</div><div class="concept-name">Comments & Docstrings</div><div class="concept-desc">Write code that future-you will understand. Professional habit.</div></div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-title">CORE CONCEPTS — CODE EXAMPLES</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON 3.12</div></div>
+          <div class="code-body"><pre><span class="cm"># ─── VARIABLES & TYPES ───────────────────────────────</span>
+name = <span class="st">"Tony Stark"</span>          <span class="cm"># str — text</span>
+age = <span class="num">43</span>                    <span class="cm"># int — whole number</span>
+iq = <span class="num">3000.5</span>                 <span class="cm"># float — decimal</span>
+is_genius = <span class="kw">True</span>            <span class="cm"># bool — True/False</span>
+suit_model = <span class="kw">None</span>           <span class="cm"># None — absence of value</span>
+
+<span class="cm"># Check type at runtime</span>
+<span class="fn">print</span>(<span class="fn">type</span>(name))           <span class="cm"># &lt;class 'str'&gt;</span>
+
+<span class="cm"># ─── F-STRINGS (USE ALWAYS) ──────────────────────────</span>
+suit = <span class="st">"Iron Man Mark L"</span>
+power = <span class="num">99.8</span>
+msg = <span class="st">f"Suit: </span>{suit}<span class="st">, Power: </span>{power}<span class="st">%, Age: </span>{age}<span class="st">"</span>
+<span class="fn">print</span>(msg)
+
+<span class="cm"># ─── STRING OPERATIONS ───────────────────────────────</span>
+hero = <span class="st">"  iron man  "</span>
+<span class="fn">print</span>(hero.<span class="fn">strip</span>())         <span class="cm"># "iron man"</span>
+<span class="fn">print</span>(hero.<span class="fn">upper</span>())         <span class="cm"># "  IRON MAN  "</span>
+<span class="fn">print</span>(hero.<span class="fn">replace</span>(<span class="st">"iron"</span>, <span class="st">"WAR"</span>))
+
+<span class="cm"># String slicing: [start:stop:step]</span>
+text = <span class="st">"Python"</span>
+<span class="fn">print</span>(text[<span class="num">0</span>:<span class="num">3</span>])            <span class="cm"># "Pyt"</span>
+<span class="fn">print</span>(text[::<span class="num">-1</span>])           <span class="cm"># "nohtyP" — reversed!</span>
+
+<span class="cm"># ─── INPUT & TYPE CASTING ────────────────────────────</span>
+user_name = <span class="fn">input</span>(<span class="st">"Enter your name: "</span>)
+user_age = <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"Enter your age: "</span>))
+<span class="fn">print</span>(<span class="st">f"Hello </span>{user_name}<span class="st">! In 10 years you'll be </span>{user_age + <span class="num">10</span>}<span class="st">"</span>)
+
+<span class="cm"># ─── MATH OPERATORS ──────────────────────────────────</span>
+<span class="fn">print</span>(<span class="num">2</span> <span class="op">**</span> <span class="num">10</span>)               <span class="cm"># 1024 — power</span>
+<span class="fn">print</span>(<span class="num">17</span> <span class="op">%</span> <span class="num">5</span>)                <span class="cm"># 2   — remainder</span>
+<span class="fn">print</span>(<span class="num">17</span> <span class="op">//</span> <span class="num">5</span>)               <span class="cm"># 3   — floor division</span></pre></div>
+        </div>
+      </div>
+
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">🤖 PROJECT 1.A — JARVIS CLI v1.0</div>
+        <div class="project-desc">Build a command-line personal assistant that takes your name, collects personal data, performs calculations, and displays a personalized intelligence report. This project uses EVERY concept from Phase 1.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Greet user by name with personalized message</div>
+          <div class="build-item"><div class="build-dot"></div>Calculate BMI from height/weight input</div>
+          <div class="build-item"><div class="build-dot"></div>Convert temperature Celsius ↔ Fahrenheit</div>
+          <div class="build-item"><div class="build-dot"></div>Generate a "JARVIS intelligence profile" display</div>
+          <div class="build-item"><div class="build-dot"></div>String manipulation and formatted output</div>
+          <div class="build-item"><div class="build-dot"></div>ASCII art header using print statements</div>
+        </div>
+        <div class="code-wrap" style="margin-top:16px">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">jarvis_cli.py — STARTER STRUCTURE</div></div>
+          <div class="code-body"><pre><span class="cm">"""
+JARVIS CLI v1.0 — Your First Python Project
+Build this YOURSELF using only what you learned in Phase 1
+"""</span>
+
+<span class="cm"># ── Step 1: Print the JARVIS header (use print + string art)</span>
+<span class="kw">def</span> <span class="fn">print_header</span>():
+    <span class="fn">print</span>(<span class="st">"=" * 50</span>)
+    <span class="fn">print</span>(<span class="st">"  J.A.R.V.I.S — Personal Intelligence System"</span>)
+    <span class="fn">print</span>(<span class="st">"=" * 50</span>)
+
+<span class="cm"># ── Step 2: Collect user info (use input + type casting)</span>
+<span class="kw">def</span> <span class="fn">collect_data</span>():
+    name = <span class="fn">input</span>(<span class="st">"JARVIS: State your name, sir: "</span>)
+    age = <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"JARVIS: Your age: "</span>))
+    <span class="kw">return</span> name, age
+
+<span class="cm"># ── Step 3: Build features using Phase 1 concepts</span>
+<span class="cm"># BMI calculator, temp converter, word counter...</span>
+<span class="cm"># YOUR CODE GOES HERE — build it yourself!</span>
+
+<span class="cm"># ── Step 4: Display formatted report using f-strings</span>
+<span class="kw">def</span> <span class="fn">display_report</span>(name, age):
+    <span class="fn">print</span>(<span class="st">f"\n⚡ INTELLIGENCE PROFILE: </span>{name.<span class="fn">upper</span>()}<span class="st">"</span>)
+    <span class="cm"># Complete this yourself!</span>
+
+<span class="cm"># ── Main execution</span>
+<span class="fn">print_header</span>()
+name, age = <span class="fn">collect_data</span>()
+<span class="fn">display_report</span>(name, age)</pre></div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-title">CHALLENGE EXERCISES</div>
+        <div class="exercise-grid">
+          <div class="exercise-card"><div class="ex-level easy">● EASY</div><div class="ex-title">Mad Libs Generator</div><div class="ex-desc">Ask for 5 words (noun, verb, adjective...) then insert them into a funny story using f-strings.</div></div>
+          <div class="exercise-card"><div class="ex-level easy">● EASY</div><div class="ex-title">Secret Code Encoder</div><div class="ex-desc">Take a sentence, reverse every word, convert to uppercase. "hello world" → "OLLEH DLROW"</div></div>
+          <div class="exercise-card"><div class="ex-level med">● MEDIUM</div><div class="ex-title">Receipt Printer</div><div class="ex-desc">Accept 3 item names and prices. Calculate total, tax (18%), grand total. Print formatted receipt.</div></div>
+          <div class="exercise-card"><div class="ex-level hard">● HARD</div><div class="ex-title">Password Strength Meter</div><div class="ex-desc">Check if password has uppercase, digits, special chars, length >8. Print strength score 0-5.</div></div>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(0,document.querySelector('[data-phase=\'0\']'))">← BACK</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(2,document.querySelector('[data-phase=\'2\']'))">PHASE 02: LOGIC GATES →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 2: LOGIC GATES ════ -->
+    <div class="phase-section" id="phase-2">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">02</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">LOGIC GATES</div>
+          <div class="phase-subtitle">⚡ CONTROL FLOW — IF/ELIF/ELSE, FOR/WHILE LOOPS, COMPREHENSIONS</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag gold">🎯 LEVEL: INITIATE</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">CONCEPTS YOU WILL MASTER</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">🔀</div><div class="concept-name">if / elif / else</div><div class="concept-desc">Conditional branching. Making decisions based on data.</div></div>
+          <div class="concept-item"><div class="concept-icon">🔁</div><div class="concept-name">for Loops</div><div class="concept-desc">Iterate over sequences: for i in range(10), for item in list</div></div>
+          <div class="concept-item"><div class="concept-icon">🔄</div><div class="concept-name">while Loops</div><div class="concept-desc">Repeat until condition is False. Use with break, continue.</div></div>
+          <div class="concept-item"><div class="concept-icon">🧮</div><div class="concept-name">range()</div><div class="concept-desc">range(start, stop, step) — generates number sequences efficiently</div></div>
+          <div class="concept-item"><div class="concept-icon">⚡</div><div class="concept-name">List Comprehensions</div><div class="concept-desc">[x**2 for x in range(10) if x%2==0] — Python's superpower</div></div>
+          <div class="concept-item"><div class="concept-icon">🛑</div><div class="concept-name">break / continue / pass</div><div class="concept-desc">Control loop execution flow precisely</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">KEY CODE PATTERNS</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON</div></div>
+          <div class="code-body"><pre><span class="cm"># ─── CONDITIONALS ────────────────────────────────────</span>
+power = <span class="num">85</span>
+<span class="kw">if</span> power <span class="op">>=</span> <span class="num">90</span>:
+    <span class="fn">print</span>(<span class="st">"Arc Reactor: OPTIMAL"</span>)
+<span class="kw">elif</span> power <span class="op">>=</span> <span class="num">60</span>:
+    <span class="fn">print</span>(<span class="st">"Arc Reactor: NOMINAL"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="st">"⚠️  CRITICAL — Seek power source"</span>)
+
+<span class="cm"># One-liner (ternary)</span>
+status = <span class="st">"ACTIVE"</span> <span class="kw">if</span> power <span class="op">></span> <span class="num">0</span> <span class="kw">else</span> <span class="st">"OFFLINE"</span>
+
+<span class="cm"># ─── FOR LOOPS ───────────────────────────────────────</span>
+suits = [<span class="st">"Mark I"</span>, <span class="st">"Mark II"</span>, <span class="st">"Mark III"</span>, <span class="st">"Mark L"</span>]
+<span class="kw">for</span> i, suit <span class="kw">in</span> <span class="fn">enumerate</span>(suits):
+    <span class="fn">print</span>(<span class="st">f"</span>{i+<span class="num">1</span>}<span class="st">. </span>{suit}<span class="st">"</span>)
+
+<span class="cm"># ─── WHILE LOOP WITH BREAK ───────────────────────────</span>
+attempts = <span class="num">0</span>
+<span class="kw">while</span> <span class="kw">True</span>:
+    guess = <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"Enter code: "</span>))
+    attempts <span class="op">+=</span> <span class="num">1</span>
+    <span class="kw">if</span> guess <span class="op">==</span> <span class="num">3000</span>:
+        <span class="fn">print</span>(<span class="st">f"Access granted in </span>{attempts}<span class="st"> attempts!"</span>)
+        <span class="kw">break</span>
+    <span class="fn">print</span>(<span class="st">"Wrong. Try again."</span>)
+
+<span class="cm"># ─── LIST COMPREHENSION (MASTER THIS!) ───────────────</span>
+numbers = <span class="fn">list</span>(<span class="fn">range</span>(<span class="num">1</span>, <span class="num">21</span>))
+
+<span class="cm"># Old way (slow thinking)</span>
+evens = []
+<span class="kw">for</span> n <span class="kw">in</span> numbers:
+    <span class="kw">if</span> n <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span>:
+        evens.<span class="fn">append</span>(n)
+
+<span class="cm"># Python way (elite thinking)</span>
+evens = [n <span class="kw">for</span> n <span class="kw">in</span> numbers <span class="kw">if</span> n <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span>]
+squares = [n<span class="op">**</span><span class="num">2</span> <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>)]</pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">🎮 PROJECT 2.A — STARK VAULT CRACKER</div>
+        <div class="project-desc">A number guessing game where the player must crack Tony Stark's vault code. Features multiple difficulty levels, hint system, lives, high score tracking — all using control flow logic only.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Random number generation (import random)</div>
+          <div class="build-item"><div class="build-dot"></div>Difficulty levels (Easy/Medium/Hard) with different ranges</div>
+          <div class="build-item"><div class="build-dot"></div>Hot/Cold hint system based on proximity</div>
+          <div class="build-item"><div class="build-dot"></div>Lives system with game over screen</div>
+          <div class="build-item"><div class="build-dot"></div>High score tracking across rounds</div>
+          <div class="build-item"><div class="build-dot"></div>Play again loop with while loop</div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">BONUS PROJECT — FizzBuzz PRO</div>
+        <div class="info-box cyan"><span>ℹ️</span><span>FizzBuzz is the #1 coding interview question for juniors. Master this pattern and you understand loops + conditionals deeply. Build the PRO version below.</span></div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">fizzbuzz_pro.py</div></div>
+          <div class="code-body"><pre><span class="cm"># Classic FizzBuzz — But build this EXTENDED version:</span>
+<span class="cm"># 1. Fizz for multiples of 3</span>
+<span class="cm"># 2. Buzz for multiples of 5</span>
+<span class="cm"># 3. FizzBuzz for both</span>
+<span class="cm"># 4. Stark for multiples of 7</span>
+<span class="cm"># 5. Count how many of each type appeared</span>
+<span class="cm"># 6. Accept N as input from user</span>
+
+results = {<span class="st">"Fizz"</span>: <span class="num">0</span>, <span class="st">"Buzz"</span>: <span class="num">0</span>, <span class="st">"FizzBuzz"</span>: <span class="num">0</span>, <span class="st">"Stark"</span>: <span class="num">0</span>}
+N = <span class="fn">int</span>(<span class="fn">input</span>(<span class="st">"Enter range: "</span>))
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, N + <span class="num">1</span>):
+    <span class="cm"># YOUR LOGIC HERE — build it!</span>
+    <span class="kw">pass</span></pre></div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(1,document.querySelector('[data-phase=\'1\']'))">← PHASE 01</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(3,document.querySelector('[data-phase=\'3\']'))">PHASE 03: SUBROUTINES →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 3: FUNCTIONS ════ -->
+    <div class="phase-section" id="phase-3">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">03</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">SUBROUTINES</div>
+          <div class="phase-subtitle">⚡ FUNCTIONS, SCOPE, MODULES, LAMBDA — CODE REUSABILITY</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag gold">🎯 LEVEL: INITIATE+</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">CONCEPTS YOU WILL MASTER</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">⚙️</div><div class="concept-name">def Functions</div><div class="concept-desc">Define reusable blocks of code with parameters and return values</div></div>
+          <div class="concept-item"><div class="concept-icon">📥</div><div class="concept-name">*args & **kwargs</div><div class="concept-desc">Accept variable numbers of positional and keyword arguments</div></div>
+          <div class="concept-item"><div class="concept-icon">🔍</div><div class="concept-name">Scope: LEGB Rule</div><div class="concept-desc">Local, Enclosing, Global, Built-in — where Python looks for names</div></div>
+          <div class="concept-item"><div class="concept-icon">λ</div><div class="concept-name">Lambda Functions</div><div class="concept-desc">One-line anonymous functions: lambda x: x**2</div></div>
+          <div class="concept-item"><div class="concept-icon">📦</div><div class="concept-name">Modules & Import</div><div class="concept-desc">import math, from random import randint, create your own modules</div></div>
+          <div class="concept-item"><div class="concept-icon">🗃️</div><div class="concept-name">Standard Library</div><div class="concept-desc">math, random, datetime, os, sys — Python's built-in powerhouse</div></div>
+          <div class="concept-item"><div class="concept-icon">📋</div><div class="concept-name">Docstrings</div><div class="concept-desc">"""Document your functions.""" Professional habit. Always do this.</div></div>
+          <div class="concept-item"><div class="concept-icon">🔄</div><div class="concept-name">Recursion</div><div class="concept-desc">Functions that call themselves — factorial, fibonacci, tree traversal</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">FUNCTIONS DEEP DIVE</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON</div></div>
+          <div class="code-body"><pre><span class="cm"># ─── FUNCTION ANATOMY ────────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">calculate_suit_power</span>(base_power, boost=<span class="num">1.0</span>, <span class="op">*</span>upgrades, <span class="op">**</span>specs):
+    <span class="st">"""
+    Calculate Iron Man suit's total power level.
+    
+    Args:
+        base_power: Core arc reactor output (int)
+        boost: Power multiplier (float, default 1.0)
+        *upgrades: Variable number of upgrade names
+        **specs: Keyword specifications (mode="stealth")
+    Returns:
+        float: Total calculated power
+    """</span>
+    total = base_power <span class="op">*</span> boost
+    total <span class="op">+=</span> <span class="fn">len</span>(upgrades) <span class="op">*</span> <span class="num">10</span>   <span class="cm"># each upgrade adds 10</span>
+    <span class="fn">print</span>(<span class="st">f"Mode: </span>{specs.<span class="fn">get</span>(<span class="st">'mode'</span>, <span class="st">'standard'</span>)}<span class="st">"</span>)
+    <span class="kw">return</span> total
+
+<span class="cm"># Calling it multiple ways</span>
+p1 = <span class="fn">calculate_suit_power</span>(<span class="num">100</span>)
+p2 = <span class="fn">calculate_suit_power</span>(<span class="num">100</span>, <span class="num">1.5</span>)
+p3 = <span class="fn">calculate_suit_power</span>(<span class="num">100</span>, <span class="num">1.5</span>, <span class="st">"repulsor"</span>, <span class="st">"unibeam"</span>, mode=<span class="st">"war"</span>)
+
+<span class="cm"># ─── LAMBDA + MAP + FILTER ───────────────────────────</span>
+powers = [<span class="num">45</span>, <span class="num">92</span>, <span class="num">78</span>, <span class="num">13</span>, <span class="num">99</span>]
+
+<span class="cm"># Lambda: anonymous function</span>
+double = <span class="kw">lambda</span> x: x <span class="op">*</span> <span class="num">2</span>
+
+<span class="cm"># Map: apply function to every element</span>
+doubled = <span class="fn">list</span>(<span class="fn">map</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="num">2</span>, powers))
+
+<span class="cm"># Filter: keep elements where condition is True</span>
+critical = <span class="fn">list</span>(<span class="fn">filter</span>(<span class="kw">lambda</span> x: x <span class="op"><</span> <span class="num">50</span>, powers))
+
+<span class="cm"># ─── RECURSION ───────────────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">factorial</span>(n):
+    <span class="kw">if</span> n <span class="op"><=</span> <span class="num">1</span>:          <span class="cm"># base case — ALWAYS have this!</span>
+        <span class="kw">return</span> <span class="num">1</span>
+    <span class="kw">return</span> n <span class="op">*</span> <span class="fn">factorial</span>(n <span class="op">-</span> <span class="num">1</span>)   <span class="cm"># recursive call</span>
+
+<span class="fn">print</span>(<span class="fn">factorial</span>(<span class="num">10</span>))     <span class="cm"># 3628800</span></pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">🧮 PROJECT 3.A — STARK CALCULATOR SUITE</div>
+        <div class="project-desc">A modular scientific calculator split across multiple Python files (modules). Each file is responsible for one category of calculations. This teaches functions + modules + code organization like professionals do it.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>basic_ops.py — add, subtract, multiply, divide functions</div>
+          <div class="build-item"><div class="build-dot"></div>scientific.py — factorial, fibonacci, prime checker</div>
+          <div class="build-item"><div class="build-dot"></div>converter.py — currency, units, temperature converters</div>
+          <div class="build-item"><div class="build-dot"></div>main.py — imports all modules, interactive menu loop</div>
+          <div class="build-item"><div class="build-dot"></div>History tracking — store last 10 calculations</div>
+          <div class="build-item"><div class="build-dot"></div>Input validation in every function</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(2,document.querySelector('[data-phase=\'2\']'))">← PHASE 02</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(4,document.querySelector('[data-phase=\'4\']'))">PHASE 04: DATA MATRICES →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 4: DATA STRUCTURES ════ -->
+    <div class="phase-section" id="phase-4">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">04</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">DATA MATRICES</div>
+          <div class="phase-subtitle">⚡ LISTS, DICTS, TUPLES, SETS — PYTHON'S CORE DATA STRUCTURES</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 10 DAYS</span><span class="meta-tag gold">🎯 LEVEL: CORE</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">FOUR DATA STRUCTURES — KNOW THEM COLD</div>
+        <div class="two-col">
+          <div>
+            <div class="concept-item" style="margin-bottom:10px"><div class="concept-icon">📋</div><div class="concept-name">List [ ] — Ordered, Mutable</div><div class="concept-desc">append, pop, sort, slice, index, insert, remove. The workhorse of Python. Use when ORDER matters.</div></div>
+            <div class="concept-item" style="margin-bottom:10px"><div class="concept-icon">📖</div><div class="concept-name">Dict { } — Key-Value, Mutable</div><div class="concept-desc">get, update, keys, values, items. O(1) lookup. Use when you need LABELS for your data.</div></div>
+          </div>
+          <div>
+            <div class="concept-item" style="margin-bottom:10px"><div class="concept-icon">🔒</div><div class="concept-name">Tuple ( ) — Ordered, Immutable</div><div class="concept-desc">Cannot be changed after creation. Use for FIXED data: coordinates, RGB colors, database rows.</div></div>
+            <div class="concept-item" style="margin-bottom:10px"><div class="concept-icon">🎯</div><div class="concept-name">Set { } — Unordered, Unique</div><div class="concept-desc">No duplicates. add, remove, union |, intersection &. Use for UNIQUE collections and fast membership tests.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">MASTERY CODE EXAMPLES</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON — DATA STRUCTURES</div></div>
+          <div class="code-body"><pre><span class="cm"># ─── LISTS — FULL POWER ──────────────────────────────</span>
+avengers = [<span class="st">"Iron Man"</span>, <span class="st">"Thor"</span>, <span class="st">"Hulk"</span>, <span class="st">"Cap"</span>]
+avengers.<span class="fn">append</span>(<span class="st">"Spider-Man"</span>)
+avengers.<span class="fn">insert</span>(<span class="num">0</span>, <span class="st">"Nick Fury"</span>)
+avengers.<span class="fn">sort</span>()
+avengers.<span class="fn">sort</span>(key=<span class="kw">lambda</span> x: <span class="fn">len</span>(x))  <span class="cm"># sort by name length</span>
+
+<span class="cm"># 2D List (matrix)</span>
+grid = [[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], [<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>], [<span class="num">7</span>, <span class="num">8</span>, <span class="num">9</span>]]
+<span class="fn">print</span>(grid[<span class="num">1</span>][<span class="num">2</span>])   <span class="cm"># 6</span>
+
+<span class="cm"># ─── DICTS — THE MOST POWERFUL STRUCTURE ─────────────</span>
+suit = {
+    <span class="st">"model"</span>: <span class="st">"Mark L"</span>,
+    <span class="st">"power"</span>: <span class="num">100</span>,
+    <span class="st">"weapons"</span>: [<span class="st">"repulsor"</span>, <span class="st">"unibeam"</span>, <span class="st">"missiles"</span>],
+    <span class="st">"specs"</span>: {<span class="st">"weight"</span>: <span class="num">25</span>, <span class="st">"speed"</span>: <span class="num">1500</span>}   <span class="cm"># nested dict!</span>
+}
+suit[<span class="st">"owner"</span>] = <span class="st">"Tony Stark"</span>   <span class="cm"># add key</span>
+power = suit.<span class="fn">get</span>(<span class="st">"power"</span>, <span class="num">0</span>)    <span class="cm"># safe access with default</span>
+
+<span class="cm"># Dict comprehension</span>
+squared = {x: x<span class="op">**</span><span class="num">2</span> <span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>)}
+
+<span class="cm"># ─── SETS — UNIQUE VALUES ────────────────────────────</span>
+team_a = {<span class="st">"Iron Man"</span>, <span class="st">"Hulk"</span>, <span class="st">"Thor"</span>}
+team_b = {<span class="st">"Hulk"</span>, <span class="st">"Cap"</span>, <span class="st">"Thor"</span>}
+
+both_teams = team_a <span class="op">|</span> team_b      <span class="cm"># union</span>
+shared = team_a <span class="op">&</span> team_b          <span class="cm"># intersection: Hulk, Thor</span>
+only_a = team_a <span class="op">-</span> team_b          <span class="cm"># difference: Iron Man</span></pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">📇 PROJECT 4.A — S.H.I.E.L.D. CONTACT SYSTEM</div>
+        <div class="project-desc">A full contact management system (like a phone book) that uses all four data structures strategically. Agents, teams, missions, and skills — stored and queried using the right data structure for each use case.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Add/edit/delete agent profiles (dict of dicts)</div>
+          <div class="build-item"><div class="build-dot"></div>Search by name, skill, or team (list operations)</div>
+          <div class="build-item"><div class="build-dot"></div>Track unique skills across all agents (set)</div>
+          <div class="build-item"><div class="build-dot"></div>Store immutable agent IDs as tuples</div>
+          <div class="build-item"><div class="build-dot"></div>Sort agents by multiple criteria (sorted + lambda)</div>
+          <div class="build-item"><div class="build-dot"></div>Statistics: most common skills, team distributions</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(3,document.querySelector('[data-phase=\'3\']'))">← PHASE 03</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(5,document.querySelector('[data-phase=\'5\']'))">PHASE 05: OBJECT PROTOCOL →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 5: OOP ════ -->
+    <div class="phase-section" id="phase-5">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">05</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">OBJECT PROTOCOL</div>
+          <div class="phase-subtitle">⚡ OOP — CLASSES, INHERITANCE, POLYMORPHISM, ENCAPSULATION</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 2 WEEKS</span><span class="meta-tag red">🎯 LEVEL: CORE+</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">THE 4 PILLARS OF OOP — MASTER THESE FOR ANY JOB</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">📦</div><div class="concept-name">Encapsulation</div><div class="concept-desc">Bundle data + methods. Use _ private, __ name-mangled. Properties with @property.</div></div>
+          <div class="concept-item"><div class="concept-icon">🧬</div><div class="concept-name">Inheritance</div><div class="concept-desc">Child class inherits from parent: class IronMan(Hero). super().__init__(). Method override.</div></div>
+          <div class="concept-item"><div class="concept-icon">🔀</div><div class="concept-name">Polymorphism</div><div class="concept-desc">Same method name, different behavior in each class. Duck typing. Override __str__, __len__.</div></div>
+          <div class="concept-item"><div class="concept-icon">🧊</div><div class="concept-name">Abstraction</div><div class="concept-desc">Hide complex internals. Show only what's needed. Abstract classes with ABC module.</div></div>
+          <div class="concept-item"><div class="concept-icon">⚡</div><div class="concept-name">Magic Methods</div><div class="concept-desc">__init__, __str__, __repr__, __len__, __add__, __eq__ — make objects behave like built-ins</div></div>
+          <div class="concept-item"><div class="concept-icon">🔧</div><div class="concept-name">Class vs Instance</div><div class="concept-desc">@classmethod, @staticmethod — when to use each and why it matters</div></div>
+          <div class="concept-item"><div class="concept-icon">🏭</div><div class="concept-name">Design Patterns</div><div class="concept-desc">Singleton, Factory — the patterns top engineers use daily</div></div>
+          <div class="concept-item"><div class="concept-icon">📐</div><div class="concept-name">SOLID Principles</div><div class="concept-desc">Single Responsibility, Open/Closed — write code that doesn't rot</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">OOP IN ACTION</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON — OOP</div></div>
+          <div class="code-body"><pre><span class="kw">from</span> abc <span class="kw">import</span> <span class="cls">ABC</span>, abstractmethod
+
+<span class="cm"># ─── ABSTRACT BASE CLASS ─────────────────────────────</span>
+<span class="kw">class</span> <span class="cls">Hero</span>(<span class="cls">ABC</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, name: str, power: <span class="fn">int</span>):
+        <span class="kw">self</span>.name = name
+        <span class="kw">self</span>._power = power          <span class="cm"># _ means "protected"</span>
+        <span class="kw">self</span>.__secret_id = <span class="kw">None</span>    <span class="cm"># __ means "private"</span>
+
+    <span class="kw">@property</span>
+    <span class="kw">def</span> <span class="fn">power</span>(<span class="kw">self</span>):
+        <span class="kw">return</span> <span class="kw">self</span>._power
+
+    <span class="kw">@power.setter</span>
+    <span class="kw">def</span> <span class="fn">power</span>(<span class="kw">self</span>, value):
+        <span class="kw">if</span> value <span class="op"><</span> <span class="num">0</span>: <span class="kw">raise</span> <span class="cls">ValueError</span>(<span class="st">"Power can't be negative!"</span>)
+        <span class="kw">self</span>._power = value
+
+    <span class="kw">@abstractmethod</span>               <span class="cm"># MUST be overridden by children</span>
+    <span class="kw">def</span> <span class="fn">attack</span>(<span class="kw">self</span>):
+        <span class="kw">pass</span>
+
+    <span class="kw">def</span> <span class="fn">__str__</span>(<span class="kw">self</span>):             <span class="cm"># Magic method for print()</span>
+        <span class="kw">return</span> <span class="st">f"Hero: </span>{<span class="kw">self</span>.name}<span class="st"> | Power: </span>{<span class="kw">self</span>._power}<span class="st">"</span>
+
+<span class="cm"># ─── INHERITANCE ─────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cls">IronMan</span>(<span class="cls">Hero</span>):
+    suit_count = <span class="num">0</span>              <span class="cm"># Class variable — shared</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, name, power, suit_model):
+        <span class="fn">super</span>().<span class="fn">__init__</span>(name, power)   <span class="cm"># call parent</span>
+        <span class="kw">self</span>.suit_model = suit_model
+        <span class="cls">IronMan</span>.suit_count <span class="op">+=</span> <span class="num">1</span>
+
+    <span class="kw">def</span> <span class="fn">attack</span>(<span class="kw">self</span>):            <span class="cm"># Required override</span>
+        <span class="kw">return</span> <span class="st">f"⚡ </span>{<span class="kw">self</span>.name}<span class="st"> fires repulsor blast!"</span>
+
+    <span class="kw">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">get_suit_count</span>(<span class="cls">cls</span>):
+        <span class="kw">return</span> <span class="st">f"</span>{<span class="cls">cls</span>.suit_count}<span class="st"> suits built"</span>
+
+tony = <span class="cls">IronMan</span>(<span class="st">"Tony"</span>, <span class="num">100</span>, <span class="st">"Mark L"</span>)
+<span class="fn">print</span>(tony)                    <span class="cm"># Uses __str__</span>
+<span class="fn">print</span>(tony.<span class="fn">attack</span>())
+tony.power = <span class="num">150</span>               <span class="cm"># Uses @property setter</span></pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">🏦 PROJECT 5.A — STARK INDUSTRIES BANK SYSTEM</div>
+        <div class="project-desc">Build a full banking system with multiple account types (Savings, Checking, Investment) demonstrating all 4 OOP pillars. Different accounts have different interest rates, withdrawal rules, and behaviors.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Abstract Account base class with common operations</div>
+          <div class="build-item"><div class="build-dot"></div>SavingsAccount, CheckingAccount, InvestmentAccount subclasses</div>
+          <div class="build-item"><div class="build-dot"></div>Deposit, withdraw with validation and overdraft protection</div>
+          <div class="build-item"><div class="build-dot"></div>Transaction history log as list of dicts</div>
+          <div class="build-item"><div class="build-dot"></div>Bank class managing multiple accounts (composition)</div>
+          <div class="build-item"><div class="build-dot"></div>Monthly interest calculation per account type</div>
+        </div>
+      </div>
+      <div class="project-showcase" style="margin-top:16px">
+        <div class="project-glow"></div>
+        <div class="project-name">🎮 PROJECT 5.B — AVENGERS RPG BATTLE GAME</div>
+        <div class="project-desc">A turn-based RPG battle simulator where heroes fight villains. Uses full OOP: class hierarchy of characters, special abilities, inventory system, health, and battle loop logic.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Character → Hero/Villain → IronMan/Thanos class hierarchy</div>
+          <div class="build-item"><div class="build-dot"></div>Weapon and Armor as separate classes (composition vs inheritance)</div>
+          <div class="build-item"><div class="build-dot"></div>Special ability system with cooldowns</div>
+          <div class="build-item"><div class="build-dot"></div>Battle loop with random chance elements</div>
+          <div class="build-item"><div class="build-dot"></div>__repr__ for debugging, __str__ for display</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(4,document.querySelector('[data-phase=\'4\']'))">← PHASE 04</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(6,document.querySelector('[data-phase=\'6\']'))">PHASE 06: FILE INTERFACE →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 6: FILE I/O ════ -->
+    <div class="phase-section" id="phase-6">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">06</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">FILE INTERFACE</div>
+          <div class="phase-subtitle">⚡ FILE I/O, EXCEPTIONS, JSON, CSV, OS MODULE</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag red">🎯 LEVEL: CORE+</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">CONCEPTS YOU WILL MASTER</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">📁</div><div class="concept-name">File Read/Write</div><div class="concept-desc">open(), with statement, 'r', 'w', 'a', 'rb' modes. The with block auto-closes files.</div></div>
+          <div class="concept-item"><div class="concept-icon">🛡️</div><div class="concept-name">Exception Handling</div><div class="concept-desc">try/except/else/finally. Specific exceptions: FileNotFoundError, ValueError, TypeError.</div></div>
+          <div class="concept-item"><div class="concept-icon">📄</div><div class="concept-name">JSON — The Universal Format</div><div class="concept-desc">json.dumps(), json.loads(), json.dump(), json.load(). Reading/writing JSON files.</div></div>
+          <div class="concept-item"><div class="concept-icon">📊</div><div class="concept-name">CSV Files</div><div class="concept-desc">csv.reader, csv.writer, csv.DictReader. Reading spreadsheet data into Python.</div></div>
+          <div class="concept-item"><div class="concept-icon">🗂️</div><div class="concept-name">os & pathlib Modules</div><div class="concept-desc">List files, create/delete directories, path manipulation. os.path vs pathlib.Path.</div></div>
+          <div class="concept-item"><div class="concept-icon">⚡</div><div class="concept-name">Custom Exceptions</div><div class="concept-desc">Create your own exception classes: class PowerLowError(Exception): ...</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">FILE I/O & EXCEPTIONS CODE</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON</div></div>
+          <div class="code-body"><pre><span class="kw">import</span> json, csv, os
+<span class="kw">from</span> pathlib <span class="kw">import</span> <span class="cls">Path</span>
+
+<span class="cm"># ─── EXCEPTION HANDLING — THE RIGHT WAY ──────────────</span>
+<span class="kw">class</span> <span class="cls">InsufficientPowerError</span>(<span class="cls">Exception</span>):
+    <span class="st">"""Custom exception for low power scenarios"""</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, current, required):
+        <span class="fn">super</span>().<span class="fn">__init__</span>(<span class="st">f"Need </span>{required}<span class="st">%, have </span>{current}<span class="st">%"</span>)
+        <span class="kw">self</span>.current = current
+
+<span class="kw">def</span> <span class="fn">load_suit_config</span>(filepath):
+    <span class="kw">try</span>:
+        <span class="kw">with</span> <span class="fn">open</span>(filepath, <span class="st">'r'</span>) <span class="kw">as</span> f:
+            data = json.<span class="fn">load</span>(f)
+        <span class="kw">return</span> data
+    <span class="kw">except</span> <span class="cls">FileNotFoundError</span>:
+        <span class="fn">print</span>(<span class="st">f"Config file not found: </span>{filepath}<span class="st">"</span>)
+        <span class="kw">return</span> {}
+    <span class="kw">except</span> json.<span class="cls">JSONDecodeError</span> <span class="kw">as</span> e:
+        <span class="fn">print</span>(<span class="st">f"Invalid JSON: </span>{e}<span class="st">"</span>)
+        <span class="kw">return</span> {}
+    <span class="kw">finally</span>:
+        <span class="fn">print</span>(<span class="st">"Config load attempt complete"</span>)  <span class="cm"># ALWAYS runs</span>
+
+<span class="cm"># ─── JSON READ/WRITE ──────────────────────────────────</span>
+config = {<span class="st">"model"</span>: <span class="st">"Mark L"</span>, <span class="st">"power"</span>: <span class="num">100</span>, <span class="st">"weapons"</span>: [<span class="st">"repulsor"</span>]}
+
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"suit.json"</span>, <span class="st">"w"</span>) <span class="kw">as</span> f:
+    json.<span class="fn">dump</span>(config, f, indent=<span class="num">2</span>)
+
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"suit.json"</span>, <span class="st">"r"</span>) <span class="kw">as</span> f:
+    loaded = json.<span class="fn">load</span>(f)
+
+<span class="cm"># ─── CSV READING ─────────────────────────────────────</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"agents.csv"</span>, newline=<span class="st">""</span>) <span class="kw">as</span> f:
+    reader = csv.<span class="cls">DictReader</span>(f)
+    agents = [row <span class="kw">for</span> row <span class="kw">in</span> reader]
+
+<span class="cm"># ─── PATHLIB — MODERN FILE PATHS ─────────────────────</span>
+data_dir = <span class="cls">Path</span>(<span class="st">"data"</span>)
+data_dir.<span class="fn">mkdir</span>(exist_ok=<span class="kw">True</span>)
+
+<span class="kw">for</span> file <span class="kw">in</span> data_dir.<span class="fn">glob</span>(<span class="st">"*.json"</span>):
+    <span class="fn">print</span>(file.name, file.stat().st_size)</pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">🗂️ PROJECT 6.A — FILE INTELLIGENCE ORGANIZER</div>
+        <div class="project-desc">Build a smart file organizer that scans a messy folder, categorizes files by type, moves them into organized subfolders, generates a JSON report, and maintains a CSV log of all operations. Real automation used by developers daily.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Scan directory, identify file types by extension</div>
+          <div class="build-item"><div class="build-dot"></div>Auto-create category subfolders (Images, Videos, Docs, Code)</div>
+          <div class="build-item"><div class="build-dot"></div>Move files with error handling (permission errors, duplicates)</div>
+          <div class="build-item"><div class="build-dot"></div>Generate JSON summary report with statistics</div>
+          <div class="build-item"><div class="build-dot"></div>CSV log of every file operation with timestamp</div>
+          <div class="build-item"><div class="build-dot"></div>Undo functionality — restore original state from log</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(5,document.querySelector('[data-phase=\'5\']'))">← PHASE 05</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(7,document.querySelector('[data-phase=\'7\']'))">PHASE 07: NETWORK UPLINK →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 7: APIS ════ -->
+    <div class="phase-section" id="phase-7">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">07</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">NETWORK UPLINK</div>
+          <div class="phase-subtitle">⚡ HTTP, REST APIs, REQUESTS LIBRARY, JSON APIs, API KEYS</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag red">🎯 LEVEL: ADVANCED</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">CONCEPTS YOU WILL MASTER</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">🌐</div><div class="concept-name">HTTP Methods</div><div class="concept-desc">GET (read), POST (create), PUT (update), DELETE. Status codes: 200, 404, 401, 500.</div></div>
+          <div class="concept-item"><div class="concept-icon">📡</div><div class="concept-name">requests Library</div><div class="concept-desc">requests.get(), .post(), response.json(), headers, params, timeout. The HTTP library.</div></div>
+          <div class="concept-item"><div class="concept-icon">🔑</div><div class="concept-name">API Keys & Auth</div><div class="concept-desc">API keys in headers, Bearer tokens, .env files with python-dotenv for security.</div></div>
+          <div class="concept-item"><div class="concept-icon">📦</div><div class="concept-name">JSON Parsing</div><div class="concept-desc">Navigate nested JSON: data["results"][0]["name"]. Handle missing keys safely.</div></div>
+          <div class="concept-item"><div class="concept-icon">⚠️</div><div class="concept-name">Error Handling for APIs</div><div class="concept-desc">requests.exceptions.ConnectionError, timeout, raise_for_status()</div></div>
+          <div class="concept-item"><div class="concept-icon">📊</div><div class="concept-name">Rate Limiting</div><div class="concept-desc">time.sleep(), retry logic, respect API limits. Don't get your key banned!</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">API INTEGRATION CODE</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON — APIs</div></div>
+          <div class="code-body"><pre><span class="kw">import</span> requests, os, time
+<span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+
+load_dotenv()   <span class="cm"># Loads .env file → never hardcode API keys!</span>
+API_KEY = os.<span class="fn">getenv</span>(<span class="st">"WEATHER_API_KEY"</span>)
+
+<span class="cm"># ─── CLEAN API WRAPPER CLASS ──────────────────────────</span>
+<span class="kw">class</span> <span class="cls">WeatherIntel</span>:
+    <span class="st">"""Weather intelligence module for JARVIS"""</span>
+    BASE_URL = <span class="st">"https://api.openweathermap.org/data/2.5"</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, api_key: str):
+        <span class="kw">self</span>.api_key = api_key
+        <span class="kw">self</span>.session = requests.<span class="cls">Session</span>()   <span class="cm"># Reuse connection</span>
+
+    <span class="kw">def</span> <span class="fn">get_weather</span>(<span class="kw">self</span>, city: str) -> dict:
+        <span class="kw">try</span>:
+            resp = <span class="kw">self</span>.session.<span class="fn">get</span>(
+                <span class="st">f"</span>{<span class="kw">self</span>.BASE_URL}<span class="st">/weather"</span>,
+                params={<span class="st">"q"</span>: city, <span class="st">"appid"</span>: <span class="kw">self</span>.api_key, <span class="st">"units"</span>: <span class="st">"metric"</span>},
+                timeout=<span class="num">10</span>
+            )
+            resp.<span class="fn">raise_for_status</span>()   <span class="cm"># Raises exception if 4xx/5xx</span>
+            data = resp.<span class="fn">json</span>()
+            <span class="kw">return</span> {
+                <span class="st">"city"</span>: data[<span class="st">"name"</span>],
+                <span class="st">"temp"</span>: data[<span class="st">"main"</span>][<span class="st">"temp"</span>],
+                <span class="st">"feels_like"</span>: data[<span class="st">"main"</span>][<span class="st">"feels_like"</span>],
+                <span class="st">"condition"</span>: data[<span class="st">"weather"</span>][<span class="num">0</span>][<span class="st">"description"</span>],
+                <span class="st">"humidity"</span>: data[<span class="st">"main"</span>][<span class="st">"humidity"</span>]
+            }
+        <span class="kw">except</span> requests.exceptions.<span class="cls">ConnectionError</span>:
+            <span class="kw">raise</span> <span class="cls">ConnectionError</span>(<span class="st">"Network uplink failed"</span>)
+        <span class="kw">except</span> requests.exceptions.<span class="cls">Timeout</span>:
+            <span class="kw">raise</span> <span class="cls">TimeoutError</span>(<span class="st">"Weather API timeout"</span>)
+
+jarvis_weather = <span class="cls">WeatherIntel</span>(API_KEY)
+weather = jarvis_weather.<span class="fn">get_weather</span>(<span class="st">"Mumbai"</span>)
+<span class="fn">print</span>(<span class="st">f"Temp: </span>{weather['temp']}<span class="st">°C — </span>{weather['condition']}<span class="st">"</span>)</pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">🌍 PROJECT 7.A — JARVIS GLOBAL INTELLIGENCE DASHBOARD</div>
+        <div class="project-desc">A command-line dashboard pulling live data from 3 real APIs: Weather (OpenWeatherMap), News (NewsAPI), and Currency Exchange (ExchangeRate-API). All free tier. Displays a formatted real-time intelligence briefing.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Weather for any city — temperature, humidity, forecast</div>
+          <div class="build-item"><div class="build-dot"></div>Top 5 headlines from NewsAPI by country/category</div>
+          <div class="build-item"><div class="build-dot"></div>Live USD → INR, EUR, GBP currency rates</div>
+          <div class="build-item"><div class="build-dot"></div>All API keys in .env file (never in code!)</div>
+          <div class="build-item"><div class="build-dot"></div>Cache results to JSON — don't hit API every second</div>
+          <div class="build-item"><div class="build-dot"></div>Auto-refresh every 5 minutes with time.sleep()</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(6,document.querySelector('[data-phase=\'6\']'))">← PHASE 06</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(8,document.querySelector('[data-phase=\'8\']'))">PHASE 08: DATA CORE →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 8: DATABASES ════ -->
+    <div class="phase-section" id="phase-8">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">08</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">DATA CORE</div>
+          <div class="phase-subtitle">⚡ SQLITE, SQL BASICS, ORM WITH SQLALCHEMY</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag red">🎯 LEVEL: ADVANCED</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">CONCEPTS YOU WILL MASTER</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">🗄️</div><div class="concept-name">SQL Fundamentals</div><div class="concept-desc">SELECT, INSERT, UPDATE, DELETE, WHERE, JOIN, GROUP BY, ORDER BY</div></div>
+          <div class="concept-item"><div class="concept-icon">🔷</div><div class="concept-name">SQLite3 Module</div><div class="concept-desc">Built into Python. sqlite3.connect(), cursor.execute(), fetchall(), commit()</div></div>
+          <div class="concept-item"><div class="concept-icon">⚡</div><div class="concept-name">SQLAlchemy ORM</div><div class="concept-desc">Map Python classes to database tables. Query with Python, not SQL strings.</div></div>
+          <div class="concept-item"><div class="concept-icon">🔐</div><div class="concept-name">SQL Injection Prevention</div><div class="concept-desc">NEVER f-string SQL! Always use parameterized queries: (?, ?) format.</div></div>
+          <div class="concept-item"><div class="concept-icon">📊</div><div class="concept-name">Database Design</div><div class="concept-desc">Primary keys, foreign keys, normalization — design tables that don't break</div></div>
+          <div class="concept-item"><div class="concept-icon">💾</div><div class="concept-name">Migrations</div><div class="concept-desc">Alembic — version control for database schemas</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">DATABASE CODE PATTERNS</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON — SQLite3</div></div>
+          <div class="code-body"><pre><span class="kw">import</span> sqlite3
+<span class="kw">from</span> contextlib <span class="kw">import</span> contextmanager
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+<span class="cm"># ─── DATABASE MANAGER CLASS ───────────────────────────</span>
+<span class="kw">class</span> <span class="cls">StarkDatabase</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, db_path: str = <span class="st">"stark.db"</span>):
+        <span class="kw">self</span>.db_path = db_path
+        <span class="kw">self</span>.<span class="fn">_init_tables</span>()
+
+    <span class="kw">def</span> <span class="fn">_init_tables</span>(<span class="kw">self</span>):
+        <span class="kw">with</span> <span class="kw">self</span>.<span class="fn">_get_conn</span>() <span class="kw">as</span> conn:
+            conn.<span class="fn">execute</span>(<span class="st">"""
+                CREATE TABLE IF NOT EXISTS expenses (
+                    id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                    amount   REAL    NOT NULL,
+                    category TEXT    NOT NULL,
+                    note     TEXT,
+                    date     TEXT    DEFAULT CURRENT_DATE
+                )
+            """</span>)
+
+    <span class="kw">@contextmanager</span>
+    <span class="kw">def</span> <span class="fn">_get_conn</span>(<span class="kw">self</span>):
+        conn = sqlite3.<span class="fn">connect</span>(<span class="kw">self</span>.db_path)
+        conn.row_factory = sqlite3.<span class="cls">Row</span>   <span class="cm"># dict-like rows!</span>
+        <span class="kw">try</span>:
+            <span class="kw">yield</span> conn
+            conn.<span class="fn">commit</span>()
+        <span class="kw">finally</span>:
+            conn.<span class="fn">close</span>()
+
+    <span class="kw">def</span> <span class="fn">add_expense</span>(<span class="kw">self</span>, amount, category, note=<span class="st">""</span>):
+        <span class="cm"># ✅ Parameterized query — NEVER use f-strings in SQL!</span>
+        <span class="kw">with</span> <span class="kw">self</span>.<span class="fn">_get_conn</span>() <span class="kw">as</span> conn:
+            conn.<span class="fn">execute</span>(
+                <span class="st">"INSERT INTO expenses (amount, category, note) VALUES (?, ?, ?)"</span>,
+                (amount, category, note)
+            )
+
+    <span class="kw">def</span> <span class="fn">get_by_category</span>(<span class="kw">self</span>, category):
+        <span class="kw">with</span> <span class="kw">self</span>.<span class="fn">_get_conn</span>() <span class="kw">as</span> conn:
+            rows = conn.<span class="fn">execute</span>(
+                <span class="st">"SELECT * FROM expenses WHERE category = ? ORDER BY date DESC"</span>,
+                (category,)
+            ).<span class="fn">fetchall</span>()
+        <span class="kw">return</span> [<span class="fn">dict</span>(r) <span class="kw">for</span> r <span class="kw">in</span> rows]</pre></div>
+        </div>
+        <div class="jarvis-tip"><div class="tip-icon">🔐</div><div class="tip-text">SECURITY ALERT: SQL Injection is the #1 database attack. NEVER do: f"SELECT * FROM users WHERE name = '{user_input}'" — a hacker types: ' OR 1=1; DROP TABLE users -- and your database is gone. ALWAYS use parameterized queries with ? placeholders.</div></div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">💰 PROJECT 8.A — STARK EXPENSE INTELLIGENCE TRACKER</div>
+        <div class="project-desc">A full CLI expense tracker with SQLite database. Add expenses, categorize them, view reports, monthly summaries, budget alerts, and export to CSV. A real-world app people actually use.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>SQLite database with expenses and budgets tables</div>
+          <div class="build-item"><div class="build-dot"></div>CRUD operations: add, view, edit, delete expenses</div>
+          <div class="build-item"><div class="build-dot"></div>Monthly/category spending reports with GROUP BY SQL</div>
+          <div class="build-item"><div class="build-dot"></div>Budget limits per category with over-budget alerts</div>
+          <div class="build-item"><div class="build-dot"></div>Export data to CSV for Excel/Sheets</div>
+          <div class="build-item"><div class="build-dot"></div>Search expenses by date range, category, amount</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(7,document.querySelector('[data-phase=\'7\']'))">← PHASE 07</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(9,document.querySelector('[data-phase=\'9\']'))">PHASE 09: NEURAL ANALYTICS →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 9: DATA SCIENCE ════ -->
+    <div class="phase-section" id="phase-9">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">09</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">NEURAL ANALYTICS</div>
+          <div class="phase-subtitle">⚡ NUMPY, PANDAS, MATPLOTLIB — DATA SCIENCE FOUNDATIONS</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 2 WEEKS</span><span class="meta-tag red">🎯 LEVEL: ELITE</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">THE DATA SCIENCE TRINITY</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">⚡</div><div class="concept-name">NumPy</div><div class="concept-desc">Fast numerical arrays. np.array, vectorized math, broadcasting. 100x faster than Python lists.</div></div>
+          <div class="concept-item"><div class="concept-icon">🐼</div><div class="concept-name">Pandas</div><div class="concept-desc">DataFrame — Excel in Python. read_csv, groupby, merge, pivot — data manipulation powerhouse.</div></div>
+          <div class="concept-item"><div class="concept-icon">📈</div><div class="concept-name">Matplotlib</div><div class="concept-desc">Create charts: line, bar, scatter, pie, heatmap. Make data visible and meaningful.</div></div>
+          <div class="concept-item"><div class="concept-icon">🎨</div><div class="concept-name">Seaborn</div><div class="concept-desc">Statistical visualizations built on Matplotlib. Beautiful charts with one line of code.</div></div>
+          <div class="concept-item"><div class="concept-icon">🧹</div><div class="concept-name">Data Cleaning</div><div class="concept-desc">Handle NaN, duplicates, type conversion, outliers — 80% of real data science work.</div></div>
+          <div class="concept-item"><div class="concept-icon">📊</div><div class="concept-name">Exploratory Analysis</div><div class="concept-desc">describe(), value_counts(), corr() — understand your data before doing anything else.</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">PANDAS MASTERY — THE MOST IMPORTANT LIBRARY</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON — PANDAS</div></div>
+          <div class="code-body"><pre><span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+<span class="cm"># ─── LOAD & EXPLORE DATA ─────────────────────────────</span>
+df = pd.<span class="fn">read_csv</span>(<span class="st">"stocks.csv"</span>)
+<span class="fn">print</span>(df.<span class="fn">head</span>())          <span class="cm"># first 5 rows</span>
+<span class="fn">print</span>(df.<span class="fn">info</span>())          <span class="cm"># types, nulls, shape</span>
+<span class="fn">print</span>(df.<span class="fn">describe</span>())     <span class="cm"># stats: mean, std, min, max</span>
+
+<span class="cm"># ─── DATA CLEANING ───────────────────────────────────</span>
+df = df.<span class="fn">dropna</span>(subset=[<span class="st">"price"</span>])      <span class="cm"># drop rows with null price</span>
+df[<span class="st">"date"</span>] = pd.<span class="fn">to_datetime</span>(df[<span class="st">"date"</span>])  <span class="cm"># fix date type</span>
+df = df.<span class="fn">drop_duplicates</span>()
+df[<span class="st">"price"</span>] = df[<span class="st">"price"</span>].<span class="fn">astype</span>(<span class="fn">float</span>)
+
+<span class="cm"># ─── FILTERING & SELECTION ───────────────────────────</span>
+cheap = df[df[<span class="st">"price"</span>] <span class="op"><</span> <span class="num">100</span>]
+tech_stocks = df[df[<span class="st">"sector"</span>] <span class="op">==</span> <span class="st">"Technology"</span>]
+top_10 = df.<span class="fn">nlargest</span>(<span class="num">10</span>, <span class="st">"market_cap"</span>)
+
+<span class="cm"># ─── GROUPBY — THE MOST POWERFUL PANDAS TOOL ─────────</span>
+sector_avg = df.<span class="fn">groupby</span>(<span class="st">"sector"</span>)[<span class="st">"price"</span>].<span class="fn">agg</span>([
+    <span class="st">"mean"</span>, <span class="st">"max"</span>, <span class="st">"min"</span>, <span class="st">"count"</span>
+]).<span class="fn">round</span>(<span class="num">2</span>)
+
+<span class="cm"># ─── VISUALIZATION ───────────────────────────────────</span>
+fig, axes = plt.<span class="fn">subplots</span>(<span class="num">1</span>, <span class="num">2</span>, figsize=(<span class="num">14</span>, <span class="num">5</span>))
+
+<span class="cm"># Line chart: stock price over time</span>
+axes[<span class="num">0</span>].<span class="fn">plot</span>(df[<span class="st">"date"</span>], df[<span class="st">"price"</span>], color=<span class="st">"cyan"</span>)
+axes[<span class="num">0</span>].<span class="fn">set_title</span>(<span class="st">"Stock Price Timeline"</span>)
+
+<span class="cm"># Bar chart: avg price by sector</span>
+sector_avg[<span class="st">"mean"</span>].<span class="fn">plot</span>(kind=<span class="st">"bar"</span>, ax=axes[<span class="num">1</span>], color=<span class="st">"steelblue"</span>)
+plt.<span class="fn">tight_layout</span>()
+plt.<span class="fn">savefig</span>(<span class="st">"analysis.png"</span>, dpi=<span class="num">150</span>)</pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">📊 PROJECT 9.A — STARK MARKET INTELLIGENCE ANALYZER</div>
+        <div class="project-desc">Download real stock market data using yfinance (free), analyze it with Pandas, and create professional charts with Matplotlib. Compare multiple stocks, calculate returns, identify trends, and generate an HTML report.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Download RELIANCE, TCS, INFY 5-year price history</div>
+          <div class="build-item"><div class="build-dot"></div>Calculate daily/monthly returns and moving averages</div>
+          <div class="build-item"><div class="build-dot"></div>Correlation analysis — which stocks move together</div>
+          <div class="build-item"><div class="build-dot"></div>Risk metrics: volatility, Sharpe ratio</div>
+          <div class="build-item"><div class="build-dot"></div>Multi-panel chart: price, volume, returns</div>
+          <div class="build-item"><div class="build-dot"></div>Auto-generate PDF/HTML analysis report</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(8,document.querySelector('[data-phase=\'8\']'))">← PHASE 08</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(10,document.querySelector('[data-phase=\'10\']'))">PHASE 10: AUTO SYSTEMS →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 10: AUTOMATION ════ -->
+    <div class="phase-section" id="phase-10">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">10</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">AUTO SYSTEMS</div>
+          <div class="phase-subtitle">⚡ WEB SCRAPING, SELENIUM, EMAIL AUTOMATION, SCHEDULING</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 1 WEEK</span><span class="meta-tag red">🎯 LEVEL: ELITE</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">AUTOMATION ARSENAL</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">🕷️</div><div class="concept-name">BeautifulSoup</div><div class="concept-desc">Parse HTML: find(), find_all(), CSS selectors. Extract data from any webpage.</div></div>
+          <div class="concept-item"><div class="concept-icon">🤖</div><div class="concept-name">Selenium</div><div class="concept-desc">Control real browsers. Click buttons, fill forms, handle JavaScript-rendered content.</div></div>
+          <div class="concept-item"><div class="concept-icon">📧</div><div class="concept-name">Email Automation</div><div class="concept-desc">smtplib + email modules. Send formatted HTML emails with attachments automatically.</div></div>
+          <div class="concept-item"><div class="concept-icon">⏰</div><div class="concept-name">Task Scheduling</div><div class="concept-desc">schedule library. Run scripts at specific times. "Every Monday 9am, email me the news."</div></div>
+          <div class="concept-item"><div class="concept-icon">📸</div><div class="concept-name">Pyautogui</div><div class="concept-desc">Control mouse and keyboard. Automate any desktop app. Screenshot, click, type.</div></div>
+          <div class="concept-item"><div class="concept-icon">⚡</div><div class="concept-name">Scrapy (Advanced)</div><div class="concept-desc">Industrial-strength web scraping framework. Spiders, pipelines, concurrent scraping.</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">WEB SCRAPING PATTERNS</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON — WEB SCRAPING</div></div>
+          <div class="code-body"><pre><span class="kw">import</span> requests
+<span class="kw">from</span> bs4 <span class="kw">import</span> <span class="cls">BeautifulSoup</span>
+<span class="kw">import</span> time, csv
+
+<span class="kw">def</span> <span class="fn">scrape_with_ethics</span>(url, delay=<span class="num">1.0</span>):
+    <span class="st">"""Always delay between requests — be a good citizen"""</span>
+    headers = {<span class="st">"User-Agent"</span>: <span class="st">"Mozilla/5.0 (educational project)"</span>}
+    
+    <span class="kw">try</span>:
+        resp = requests.<span class="fn">get</span>(url, headers=headers, timeout=<span class="num">10</span>)
+        resp.<span class="fn">raise_for_status</span>()
+        time.<span class="fn">sleep</span>(delay)   <span class="cm"># BE POLITE — always delay</span>
+        <span class="kw">return</span> <span class="cls">BeautifulSoup</span>(resp.text, <span class="st">"html.parser"</span>)
+    <span class="kw">except</span> <span class="cls">Exception</span> <span class="kw">as</span> e:
+        <span class="fn">print</span>(<span class="st">f"Scrape failed: </span>{e}<span class="st">"</span>)
+        <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="cm"># ─── PARSE HTML ──────────────────────────────────────</span>
+soup = <span class="fn">scrape_with_ethics</span>(<span class="st">"https://quotes.toscrape.com"</span>)
+
+<span class="kw">if</span> soup:
+    quotes = soup.<span class="fn">find_all</span>(<span class="st">"div"</span>, class_=<span class="st">"quote"</span>)
+    results = []
+    
+    <span class="kw">for</span> quote <span class="kw">in</span> quotes:
+        text = quote.<span class="fn">find</span>(<span class="st">"span"</span>, class_=<span class="st">"text"</span>).get_text()
+        author = quote.<span class="fn">find</span>(<span class="st">"small"</span>, class_=<span class="st">"author"</span>).get_text()
+        tags = [t.get_text() <span class="kw">for</span> t <span class="kw">in</span> quote.<span class="fn">find_all</span>(<span class="st">"a"</span>, class_=<span class="st">"tag"</span>)]
+        results.<span class="fn">append</span>({<span class="st">"text"</span>: text, <span class="st">"author"</span>: author, <span class="st">"tags"</span>: tags})
+
+    <span class="cm"># Save to CSV</span>
+    <span class="kw">with</span> <span class="fn">open</span>(<span class="st">"quotes.csv"</span>, <span class="st">"w"</span>, newline=<span class="st">""</span>) <span class="kw">as</span> f:
+        writer = csv.<span class="cls">DictWriter</span>(f, fieldnames=[<span class="st">"text"</span>, <span class="st">"author"</span>, <span class="st">"tags"</span>])
+        writer.<span class="fn">writeheader</span>()
+        writer.<span class="fn">writerows</span>(results)</pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">🤖 PROJECT 10.A — JARVIS AUTO INTELLIGENCE BOT</div>
+        <div class="project-desc">A fully automated Python bot that scrapes news, checks job listings, monitors product prices, and emails you a daily intelligence briefing — all scheduled to run automatically every morning at 8am.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Scrape top 10 tech news headlines from multiple sites</div>
+          <div class="build-item"><div class="build-dot"></div>Monitor Amazon/Flipkart product prices (drop alert)</div>
+          <div class="build-item"><div class="build-dot"></div>Scrape Python job listings from job portals</div>
+          <div class="build-item"><div class="build-dot"></div>Compose formatted HTML email with all results</div>
+          <div class="build-item"><div class="build-dot"></div>Send email via Gmail SMTP automatically</div>
+          <div class="build-item"><div class="build-dot"></div>Schedule to run every morning at 8am with schedule lib</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(9,document.querySelector('[data-phase=\'9\']'))">← PHASE 09</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(11,document.querySelector('[data-phase=\'11\']'))">PHASE 11: ADV PROTOCOLS →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 11: ADVANCED ════ -->
+    <div class="phase-section" id="phase-11">
+      <div class="phase-header">
+        <div class="phase-badge"><div class="phase-badge-num">11</div><div class="phase-badge-label">PHASE</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title">ADVANCED PROTOCOLS</div>
+          <div class="phase-subtitle">⚡ DECORATORS, GENERATORS, ASYNC/AWAIT, TYPING, TESTING</div>
+          <div class="phase-meta"><span class="meta-tag">⏱ 2 WEEKS</span><span class="meta-tag red">🎯 LEVEL: ELITE</span></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">CONCEPTS THAT SEPARATE TOP 1% FROM THE REST</div>
+        <div class="concept-grid">
+          <div class="concept-item"><div class="concept-icon">🎨</div><div class="concept-name">Decorators</div><div class="concept-desc">@functools.wraps. Create @timer, @retry, @cache decorators. Understand closures first.</div></div>
+          <div class="concept-item"><div class="concept-icon">⚡</div><div class="concept-name">Generators & yield</div><div class="concept-desc">Memory-efficient iteration. Process infinite streams. yield turns functions into generators.</div></div>
+          <div class="concept-item"><div class="concept-icon">🔄</div><div class="concept-name">Async / Await</div><div class="concept-desc">asyncio, aiohttp — concurrent execution without threads. Handle 1000 API calls simultaneously.</div></div>
+          <div class="concept-item"><div class="concept-icon">📐</div><div class="concept-name">Type Hints</div><div class="concept-desc">def add(x: int, y: int) -> int. mypy for type checking. Professional code always has types.</div></div>
+          <div class="concept-item"><div class="concept-icon">🧪</div><div class="concept-name">pytest Testing</div><div class="concept-desc">Write tests before code (TDD). pytest, fixtures, mocking. Test coverage matters in production.</div></div>
+          <div class="concept-item"><div class="concept-icon">🔧</div><div class="concept-name">Context Managers</div><div class="concept-desc">__enter__ __exit__, @contextmanager. Beyond just with open() — create your own.</div></div>
+          <div class="concept-item"><div class="concept-icon">🏎️</div><div class="concept-name">Performance: Profiling</div><div class="concept-desc">cProfile, line_profiler. Find bottlenecks. Optimize the 3% of code that takes 97% of time.</div></div>
+          <div class="concept-item"><div class="concept-icon">📦</div><div class="concept-name">Package Publishing</div><div class="concept-desc">pyproject.toml, setup.py, publish to PyPI. Your own installable pip package.</div></div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="card-title">ADVANCED CODE — DECORATORS & ASYNC</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PYTHON — ADVANCED</div></div>
+          <div class="code-body"><pre><span class="kw">import</span> asyncio, aiohttp, functools, time
+<span class="kw">from</span> typing <span class="kw">import</span> Callable, Any
+
+<span class="cm"># ─── DECORATOR FACTORY ───────────────────────────────</span>
+<span class="kw">def</span> <span class="fn">retry</span>(max_attempts: <span class="fn">int</span> = <span class="num">3</span>, delay: <span class="fn">float</span> = <span class="num">1.0</span>):
+    <span class="st">"""Retry decorator with configurable attempts"""</span>
+    <span class="kw">def</span> <span class="fn">decorator</span>(func: <span class="cls">Callable</span>) -> <span class="cls">Callable</span>:
+        <span class="kw">@functools</span>.<span class="fn">wraps</span>(func)   <span class="cm"># preserve function metadata</span>
+        <span class="kw">def</span> <span class="fn">wrapper</span>(<span class="op">*</span>args, <span class="op">**</span>kwargs) -> <span class="cls">Any</span>:
+            <span class="kw">for</span> attempt <span class="kw">in</span> <span class="fn">range</span>(max_attempts):
+                <span class="kw">try</span>:
+                    <span class="kw">return</span> <span class="fn">func</span>(<span class="op">*</span>args, <span class="op">**</span>kwargs)
+                <span class="kw">except</span> <span class="cls">Exception</span> <span class="kw">as</span> e:
+                    <span class="kw">if</span> attempt <span class="op">==</span> max_attempts <span class="op">-</span> <span class="num">1</span>: <span class="kw">raise</span>
+                    time.<span class="fn">sleep</span>(delay <span class="op">*</span> (<span class="num">2</span> <span class="op">**</span> attempt))  <span class="cm"># exponential backoff</span>
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator
+
+<span class="kw">@retry</span>(max_attempts=<span class="num">3</span>, delay=<span class="num">0.5</span>)
+<span class="kw">def</span> <span class="fn">unreliable_api_call</span>():
+    <span class="kw">pass</span>   <span class="cm"># auto-retries 3x on failure!</span>
+
+<span class="cm"># ─── GENERATORS — MEMORY EFFICIENT ───────────────────</span>
+<span class="kw">def</span> <span class="fn">fibonacci_stream</span>():
+    <span class="st">"""Infinite Fibonacci generator — uses ZERO extra memory"""</span>
+    a, b = <span class="num">0</span>, <span class="num">1</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        <span class="kw">yield</span> a         <span class="cm"># pauses here, returns a, resumes on next()</span>
+        a, b = b, a + b
+
+fib = <span class="fn">fibonacci_stream</span>()
+first_10 = [<span class="fn">next</span>(fib) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>)]
+
+<span class="cm"># ─── ASYNC — CONCURRENT API CALLS ────────────────────</span>
+<span class="kw">async def</span> <span class="fn">fetch_data</span>(session, url: str) -> dict:
+    <span class="kw">async with</span> session.<span class="fn">get</span>(url) <span class="kw">as</span> resp:
+        <span class="kw">return await</span> resp.<span class="fn">json</span>()
+
+<span class="kw">async def</span> <span class="fn">fetch_all_parallel</span>(urls: <span class="fn">list</span>[str]) -> <span class="fn">list</span>:
+    <span class="kw">async with</span> aiohttp.<span class="cls">ClientSession</span>() <span class="kw">as</span> session:
+        tasks = [<span class="fn">fetch_data</span>(session, url) <span class="kw">for</span> url <span class="kw">in</span> urls]
+        <span class="kw">return await</span> asyncio.<span class="fn">gather</span>(<span class="op">*</span>tasks)   <span class="cm"># ALL at once!</span>
+
+<span class="cm"># 100 API calls in parallel — same time as 1 synchronous call</span>
+results = asyncio.<span class="fn">run</span>(<span class="fn">fetch_all_parallel</span>(url_list))</pre></div>
+        </div>
+      </div>
+      <div class="project-showcase">
+        <div class="project-glow"></div>
+        <div class="project-name">🕷️ PROJECT 11.A — ASYNC INTELLIGENCE CRAWLER</div>
+        <div class="project-desc">An async web crawler that fetches 50+ URLs simultaneously using aiohttp + asyncio — what would take 50 seconds synchronously takes 2 seconds async. Add decorators for rate limiting, retry logic, and caching.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot"></div>Async crawler with aiohttp + asyncio.gather</div>
+          <div class="build-item"><div class="build-dot"></div>@retry decorator with exponential backoff</div>
+          <div class="build-item"><div class="build-dot"></div>@cache decorator using functools.lru_cache</div>
+          <div class="build-item"><div class="build-dot"></div>@timer decorator to measure execution time</div>
+          <div class="build-item"><div class="build-dot"></div>Semaphore to limit concurrent connections</div>
+          <div class="build-item"><div class="build-dot"></div>Full pytest test suite for all components</div>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(10,document.querySelector('[data-phase=\'10\']'))">← PHASE 10</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(12,document.querySelector('[data-phase=\'12\']'))">OMEGA SEQUENCE →</button>
+      </div>
+    </div>
+
+    <!-- ════ PHASE 12: OMEGA ════ -->
+    <div class="phase-section" id="phase-12">
+      <div class="phase-header">
+        <div class="phase-badge" style="background:rgba(255,23,68,0.15);border-color:rgba(255,23,68,0.4)"><div class="phase-badge-num" style="color:#ff6b8a;font-size:22px">Ω</div><div class="phase-badge-label" style="color:#ff6b8a">OMEGA</div></div>
+        <div class="phase-title-wrap">
+          <div class="phase-title" style="color:#ff6b8a">OMEGA SEQUENCE</div>
+          <div class="phase-subtitle" style="color:#ff6b8a">⚡ FINAL BOSS — BUILD A COMPLETE PRODUCTION PYTHON APPLICATION</div>
+          <div class="phase-meta"><span class="meta-tag red">⏱ 3-4 WEEKS</span><span class="meta-tag red">🎯 LEVEL: ELITE</span><span class="meta-tag red">🏆 TOP 1%</span></div>
+        </div>
+      </div>
+
+      <div class="omega-banner">
+        <div class="omega-title">THE OMEGA SEQUENCE</div>
+        <div class="omega-sub">⚡ COMPLETE THIS — AND YOU'RE IN THE TOP 1% ⚡</div>
+        <p style="font-size:13px;color:rgba(255,150,150,0.7);margin-top:12px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.7">This is the final boss. Everything you've learned in Phases 1-11 gets combined into one complete, production-quality Python application. This is your portfolio centrepiece — the project that gets you hired.</p>
+      </div>
+
+      <div class="project-showcase" style="border-color:rgba(255,23,68,0.4);background:linear-gradient(135deg,rgba(255,23,68,0.04),rgba(255,100,50,0.06))">
+        <div class="project-name" style="color:#ff6b8a;font-size:20px">🚀 FINAL PROJECT — J.A.R.V.I.S. PERSONAL INTELLIGENCE SYSTEM</div>
+        <div class="project-desc">A fully functional AI-powered personal assistant CLI application — the culmination of everything. It tracks your tasks, expenses, reads you the news, tells weather, stores data in SQLite, hits APIs concurrently, and runs scheduled tasks. Built with clean OOP, proper error handling, logging, tests, and packaged as an installable CLI tool.</div>
+        <div class="what-you-build">
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>OOP architecture: separate classes for each module</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>SQLite database: tasks, expenses, notes, history</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>Async API calls: weather + news + currency simultaneously</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>Custom decorators: @log, @retry, @requires_auth, @timed</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>File I/O: JSON config, CSV exports, log files</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>Scheduled tasks with schedule library</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>Full test suite: 30+ pytest tests, 90%+ coverage</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>Proper logging: rotating file logs + console</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>Type hints on every function</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>Packaged as installable CLI with typer/click</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>README.md, pyproject.toml, published to GitHub</div>
+          <div class="build-item"><div class="build-dot" style="background:#ff6b8a;box-shadow:0 0 6px #ff6b8a"></div>Docker container for deployment</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-title">OMEGA PROJECT ARCHITECTURE</div>
+        <div class="code-wrap">
+          <div class="code-header"><div class="code-dots"><div class="code-dot r"></div><div class="code-dot y"></div><div class="code-dot g"></div></div><div class="code-lang">PROJECT STRUCTURE</div></div>
+          <div class="code-body"><pre><span class="cm"># jarvis-cli/</span>
+├── jarvis/
+│   ├── __init__.py
+│   ├── main.py              <span class="cm"># CLI entry point (typer)</span>
+│   ├── config.py            <span class="cm"># Settings, env vars, constants</span>
+│   ├── database/
+│   │   ├── db.py            <span class="cm"># SQLAlchemy models + connection</span>
+│   │   └── migrations/      <span class="cm"># Alembic migrations</span>
+│   ├── modules/
+│   │   ├── tasks.py         <span class="cm"># Task management (OOP)</span>
+│   │   ├── expenses.py      <span class="cm"># Expense tracking (OOP)</span>
+│   │   ├── intelligence.py  <span class="cm"># Async API: news + weather</span>
+│   │   ├── scheduler.py     <span class="cm"># Scheduled tasks</span>
+│   │   └── notifier.py      <span class="cm"># Email notifications</span>
+│   └── utils/
+│       ├── decorators.py    <span class="cm"># @retry, @timer, @log</span>
+│       ├── validators.py    <span class="cm"># Input validation</span>
+│       └── formatters.py    <span class="cm"># Output formatting</span>
+├── tests/
+│   ├── test_tasks.py        <span class="cm"># 10+ tests</span>
+│   ├── test_expenses.py     <span class="cm"># 10+ tests</span>
+│   ├── test_intelligence.py <span class="cm"># Mocked API tests</span>
+│   └── conftest.py          <span class="cm"># Test fixtures</span>
+├── .env                     <span class="cm"># API keys (gitignored!)</span>
+├── pyproject.toml           <span class="cm"># Package config</span>
+├── Dockerfile               <span class="cm"># Container</span>
+└── README.md                <span class="cm"># Professional docs</span></pre></div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-title">AFTER OMEGA — YOUR PATH TO TOP 1%</div>
+        <div class="roadmap-steps">
+          <div class="roadmap-step">
+            <div class="step-circle">A</div>
+            <div class="step-content">
+              <div class="step-title">Specialise in One Domain</div>
+              <div class="step-body">Choose: Web (FastAPI/Django) OR Data Science (sklearn, PyTorch) OR DevOps (Docker, Kubernetes). Go 100km deep in one direction.</div>
+            </div>
+          </div>
+          <div class="roadmap-step">
+            <div class="step-circle">B</div>
+            <div class="step-content">
+              <div class="step-title">Contribute to Open Source</div>
+              <div class="step-body">Fix bugs in real Python libraries. Read professional code. Your first PR to a real project is a career accelerator. Start with "good first issue" labels on GitHub.</div>
+            </div>
+          </div>
+          <div class="roadmap-step">
+            <div class="step-circle">C</div>
+            <div class="step-content">
+              <div class="step-title">Build in Public</div>
+              <div class="step-body">Post your projects on LinkedIn/Twitter/GitHub. Document what you learned. Your audience becomes your job pipeline. The internet rewards consistent builders.</div>
+            </div>
+          </div>
+          <div class="roadmap-step">
+            <div class="step-circle">D</div>
+            <div class="step-content">
+              <div class="step-title">Read Production Code</div>
+              <div class="step-body">Read the source code of FastAPI, Pydantic, Httpx. These are masterclasses in Python written by world-class engineers. Free forever at github.com.</div>
+            </div>
+          </div>
+          <div class="roadmap-step">
+            <div class="step-circle">E</div>
+            <div class="step-content">
+              <div class="step-title">System Design + DSA</div>
+              <div class="step-body">LeetCode for algorithms (Easy→Medium). System Design Interview for architecture. These + Python mastery = any engineering job at any company.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card" style="text-align:center;padding:32px">
+        <div style="font-size:48px;margin-bottom:12px">🏆</div>
+        <div style="font-family:'Orbitron',monospace;font-size:18px;color:var(--gold);margin-bottom:8px;text-shadow:0 0 20px rgba(255,215,0,0.4)">MISSION COMPLETE</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.8;max-width:500px;margin:0 auto">You have reached the end of the JARVIS Python Mastery Protocol. Complete all 12 phases and the Omega project — and you will be in the top 1% of Python programmers worldwide. The only thing standing between you and mastery is consistent daily action.</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);margin-top:16px;letter-spacing:2px">⚡ NOW GO BUILD SOMETHING INCREDIBLE ⚡</div>
+      </div>
+      <div class="nav-controls">
+        <button class="nav-btn-ctrl" onclick="showPhase(11,document.querySelector('[data-phase=\'11\']'))">← PHASE 11</button>
+        <button class="nav-btn-ctrl primary" onclick="showPhase(0,document.querySelector('[data-phase=\'0\']'))">↺ RESTART PROTOCOL</button>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+</main>
+</div><!-- /shell -->
+
+<!-- ═══════════════════ SIGNATURE FOOTER ═══════════════════ -->
+<footer class="sig-footer">
+  <div class="sig-scanline"></div>
+  <div class="sig-inner">
+
+    <!-- Arc pulse -->
+    <div class="sig-arc">
+      <div class="sig-arc-ring sig-arc-ring-1"></div>
+      <div class="sig-arc-ring sig-arc-ring-2"></div>
+      <div class="sig-arc-ring sig-arc-ring-3"></div>
+      <div class="sig-arc-core"></div>
+    </div>
+
+    <!-- Quote -->
+    <div class="sig-quote">
+      &ldquo;The ones who are crazy enough to think they can change the world<br class="sig-br"> are the ones who do.&rdquo;
+    </div>
+
+    <!-- Divider line -->
+    <div class="sig-divider">
+      <div class="sig-divider-line"></div>
+      <div class="sig-divider-diamond">◆</div>
+      <div class="sig-divider-line"></div>
+    </div>
+
+    <!-- Name -->
+    <div class="sig-built-by">DESIGNED &amp; BUILT BY</div>
+    <div class="sig-name">Priyanshu_Bal</div>
+    <div class="sig-tagline">Architect of the JARVIS Python Mastery Protocol</div>
+
+    <!-- Bottom bar -->
+    <div class="sig-bottom">
+      <span class="sig-copy">© 2025 Priyanshu_Bal</span>
+      <span class="sig-dot-sep">·</span>
+      <span class="sig-stack">Python · HTML · CSS · JavaScript</span>
+    </div>
+
+  </div>
+</footer>
+
+<style>
+/* ── SIGNATURE FOOTER ─────────────────────────────────── */
+.sig-footer{
+  position:relative;
+  background:rgba(0,0,0,0.6);
+  border-top:1px solid rgba(0,212,255,0.2);
+  overflow:hidden;
+  padding:56px 24px 40px;
+  text-align:center;
+  z-index:2;
+}
+/* top glow beam */
+.sig-footer::before{
+  content:'';position:absolute;top:0;left:50%;
+  transform:translateX(-50%);
+  width:60%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  box-shadow:0 0 24px rgba(0,212,255,0.5);
+}
+/* subtle radial bg */
+.sig-footer::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 80% at 50% 100%,rgba(0,60,120,0.12),transparent);
+  pointer-events:none;
+}
+
+/* scan-line texture */
+.sig-scanline{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,212,255,0.012) 3px,rgba(0,212,255,0.012) 4px);
+  pointer-events:none;z-index:0;
+}
+
+.sig-inner{position:relative;z-index:1;max-width:680px;margin:0 auto}
+
+/* ── ARC REACTOR ── */
+.sig-arc{
+  width:72px;height:72px;margin:0 auto 28px;
+  position:relative;
+}
+.sig-arc-ring{
+  position:absolute;border-radius:50%;border-style:solid;
+  border-color:transparent;
+}
+.sig-arc-ring-1{
+  inset:0;border-width:1.5px;
+  border-top-color:rgba(0,212,255,0.6);
+  border-right-color:rgba(0,212,255,0.2);
+  animation:sig-spin 6s linear infinite;
+}
+.sig-arc-ring-2{
+  inset:10px;border-width:1px;
+  border-bottom-color:rgba(0,212,255,0.5);
+  border-left-color:rgba(0,212,255,0.15);
+  animation:sig-spin 4s linear infinite reverse;
+}
+.sig-arc-ring-3{
+  inset:18px;border-width:1px;
+  border-top-color:rgba(0,255,234,0.4);
+  animation:sig-spin 3s linear infinite;
+}
+.sig-arc-core{
+  position:absolute;inset:22px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,0.95) 10%,rgba(0,120,255,0.6) 50%,transparent);
+  box-shadow:0 0 18px rgba(0,212,255,0.8),0 0 36px rgba(0,100,255,0.35);
+  animation:sig-pulse 2.2s ease-in-out infinite;
+}
+@keyframes sig-spin{to{transform:rotate(360deg)}}
+@keyframes sig-pulse{
+  0%,100%{box-shadow:0 0 18px rgba(0,212,255,0.8),0 0 36px rgba(0,100,255,0.35)}
+  50%{box-shadow:0 0 28px rgba(0,212,255,1),0 0 56px rgba(0,150,255,0.5)}
+}
+
+/* ── QUOTE ── */
+.sig-quote{
+  font-family:'Exo 2',sans-serif;
+  font-size:clamp(13px,2.2vw,17px);
+  font-weight:300;
+  font-style:italic;
+  color:rgba(200,230,240,0.7);
+  line-height:1.75;
+  letter-spacing:0.3px;
+  margin-bottom:28px;
+  position:relative;
+  padding:0 12px;
+}
+.sig-quote::before{
+  content:'\275D';
+  position:absolute;top:-12px;left:0;
+  font-size:40px;font-style:normal;
+  color:rgba(0,212,255,0.12);
+  font-family:Georgia,serif;line-height:1;
+}
+.sig-br{display:none}
+@media(min-width:480px){.sig-br{display:inline}}
+
+/* ── DIVIDER ── */
+.sig-divider{
+  display:flex;align-items:center;gap:10px;
+  margin:0 auto 24px;max-width:300px;
+}
+.sig-divider-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.3))}
+.sig-divider-line:last-child{background:linear-gradient(90deg,rgba(0,212,255,0.3),transparent)}
+.sig-divider-diamond{
+  font-size:8px;color:var(--cyan);
+  text-shadow:0 0 8px var(--cyan);
+  animation:sig-pulse 2s ease-in-out infinite;
+  flex-shrink:0;
+}
+
+/* ── NAME BLOCK ── */
+.sig-built-by{
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px;letter-spacing:4px;
+  color:rgba(0,212,255,0.45);
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.sig-name{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(22px,5vw,36px);
+  font-weight:900;
+  letter-spacing:2px;
+  background:linear-gradient(135deg,var(--cyan) 0%,#00ffea 40%,var(--gold) 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:none;
+  filter:drop-shadow(0 0 16px rgba(0,212,255,0.5));
+  margin-bottom:8px;
+  animation:sig-name-glow 3s ease-in-out infinite alternate;
+}
+@keyframes sig-name-glow{
+  from{filter:drop-shadow(0 0 10px rgba(0,212,255,0.4))}
+  to{filter:drop-shadow(0 0 24px rgba(0,212,255,0.8)) drop-shadow(0 0 40px rgba(0,255,200,0.3))}
+}
+.sig-tagline{
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;letter-spacing:1.5px;
+  color:rgba(0,212,255,0.4);
+  text-transform:uppercase;
+  margin-bottom:32px;
+}
+
+/* ── BOTTOM BAR ── */
+.sig-bottom{
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;flex-wrap:wrap;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px;color:rgba(200,230,240,0.25);
+  border-top:1px solid rgba(0,212,255,0.07);
+  padding-top:16px;
+}
+.sig-dot-sep{color:rgba(0,212,255,0.3)}
+.sig-stack{color:rgba(0,212,255,0.3)}
+
+/* Mobile tweaks for footer */
+@media(max-width:768px){
+  .sig-footer{padding:40px 16px 32px}
+  .sig-arc{width:56px;height:56px;margin-bottom:20px}
+  .sig-quote{font-size:13px;margin-bottom:20px}
+  .sig-tagline{font-size:9px;letter-spacing:1px}
+  .sig-bottom{font-size:9px;gap:7px}
+}
+</style>
+
+<script>
+const phases = document.querySelectorAll('.phase-section');
+const navBtns = document.querySelectorAll('.phase-btn');
+const progBar = document.getElementById('prog-bar');
+const progText = document.getElementById('prog-text');
+const phaseIndicator = document.getElementById('phase-indicator');
+const visited = new Set([0]);
+const phaseNames = ['HOW TO USE','CORE SYSTEMS','LOGIC GATES','SUBROUTINES','DATA MATRICES','OBJECT PROTOCOL','FILE INTERFACE','NETWORK UPLINK','DATA CORE','NEURAL ANALYTICS','AUTO SYSTEMS','ADV PROTOCOLS','OMEGA SEQUENCE'];
+
+/* ── Sidebar toggle (mobile) ── */
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const btn     = document.getElementById('mob-menu-btn');
+  const isOpen  = sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('visible', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  // Prevent body scroll when sidebar open
+  document.body.style.overflow = isOpen ? '' : 'hidden';
+}
+
+function closeSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const btn     = document.getElementById('mob-menu-btn');
+  sidebar.classList.remove('open');
+  overlay.classList.remove('visible');
+  btn.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* Close sidebar on Escape key */
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeSidebar(); });
+
+/* Close sidebar on swipe left */
+let touchStartX = 0;
+document.querySelector('.sidebar').addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive:true});
+document.querySelector('.sidebar').addEventListener('touchend', e => {
+  if(touchStartX - e.changedTouches[0].clientX > 60) closeSidebar();
+}, {passive:true});
+
+function showPhase(n, btn) {
+  phases.forEach(p => p.classList.remove('active'));
+  navBtns.forEach(b => {
+    b.classList.remove('active');
+    b.style.background='transparent';
+    b.style.borderLeft='2px solid transparent';
+  });
+  document.getElementById('phase-' + n).classList.add('active');
+  if(btn) {
+    btn.classList.add('active');
+    const c = n===12?'#ff6b8a':'#00d4ff';
+    btn.style.background = (n===12?'rgba(255,23,68,0.1)':'rgba(0,212,255,0.08)');
+    btn.style.borderLeft = '2px solid ' + c;
+  }
+  visited.add(n);
+  const pct = Math.round((visited.size / 13) * 100);
+  progBar.style.width = pct + '%';
+  progText.textContent = 'MODULE ' + (visited.size-1) + ' / 12 VISITED';
+  const name = phaseNames[n] || '';
+  if(phaseIndicator) phaseIndicator.textContent = 'PHASE ' + (n < 10 ? '0'+n : n===12?'Ω':n) + ' :: ' + name;
+  // Scroll to top of content
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.querySelector('.main')?.scrollTo({top:0,behavior:'smooth'});
+  // Auto-close sidebar on mobile after selection
+  if(window.innerWidth <= 768) closeSidebar();
+}
+
+// Init first button styling
+const firstBtn = document.querySelector('[data-phase="0"]');
+if(firstBtn){
+  firstBtn.style.background='rgba(0,212,255,0.08)';
+  firstBtn.style.borderLeft='2px solid #00d4ff';
+}
+
+// Close sidebar if window resized to desktop
+window.addEventListener('resize', () => {
+  if(window.innerWidth > 768) {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('visible');
+    document.getElementById('mob-menu-btn').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+});
+</script>
+</body>
+</html>
